@@ -6,119 +6,65 @@ from dateutil.tz import gettz
 from datetime import datetime
 
 
-def att(a, v):
-    if a == "RFC":
-        if v == 3.2:
-            return 'rfc'
-        else:
-            return 'Rfc'
-    if a == "RS":
-        if v == 3.2:
-            return 'nombre'
-        else:
-            return 'Nombre'
-    if a == "FECHA":
-        if v == 3.2:
-            return 'fecha'
-        else:
-            return 'Fecha'
-    if a == "SERIE":
-        if v == 3.2:
-            return 'serie'
-        else:
-            return 'Serie'
-    if a == "FOLIO":
-        if v == 3.2:
-            return 'folio'
-        else:
-            return 'Folio'
-    if a == "SUBTOT":
-        if v == 3.2:
-            return 'subTotal'
-        else:
-            return 'SubTotal'
-    if a == "IMPUESTOS":
-        if v == 3.2:
-            return 'totalImpuestosTrasladados'
-        else:
-            return 'TotalImpuestosTrasladados'
-    if a == "TOT":
-        if v == 3.2:
-            return 'total'
-        else:
-            return 'Total'
-    if a == "OTCG":
-        if v == 3.2:
-            return 'TotalCargos'
-        else:
-            return 'TotalCargos'
+v3_2 = {'RFC': 'rfc', 'RS': 'nombre', 'FECHA': 'fecha', 'SERIE': 'serie', 'FOLIO': 'folio', 'SUBTOT': 'subTotal',
+        'IMPUESTOS': 'totalImpuestosTrasladados', 'TOT': 'total', 'OTCG': 'TotalCargos'}
+v3_3 = {'RFC': 'Rfc', 'RS': 'Nombre', 'FECHA': 'Fecha', 'SERIE': 'Serie', 'FOLIO': 'Folio', 'SUBTOT': 'SubTotal',
+        'IMPUESTOS': 'TotalImpuestosTrasladados', 'TOT': 'Total', 'OTCG': 'TotalCargos'}
 
 
 def parseCFDI(fln):
     tree = etree.parse(fln)
     root = tree.getroot()
+    cfdidict = {}
     v = tua = otcr = imp = 0
     rfce = rse = rfcr = rsr = uuid = ''
     tzinfos = {"CST": gettz("America/Mexico_City")}
     print('ARCHIVO: ', fln)
     if 'version' in root.attrib:
-        # print('VERSION: ', root.attrib['version'])
+        cfdidict = v3_2
         v = 3.2
     else:
         if 'Version' in root.attrib:
-            # print('VERSION: ', root.attrib['Version'])
+            cfdidict = v3_3
             v = 3.3
     if v == 0:
         return None
-    # print('FECHA: ', root.attrib[att('FECHA', v)])
-    fch = parser.parse(root.attrib[att('FECHA', v)], tzinfos=tzinfos).strftime('%d/%m/%Y %H:%M:%S')
+    fch = parser.parse(root.attrib[cfdidict['FECHA']], tzinfos=tzinfos).strftime('%d/%m/%Y %H:%M:%S')
     fecha = datetime.strptime(fch, '%d/%m/%Y %H:%M:%S')
-    if att('SERIE', v) in root.attrib:
-        folio = root.attrib[att('SERIE', v)] + " - " + root.attrib[att('FOLIO', v)]
-        # print('FOLIO: ', root.attrib[att('SERIE', v)], "-", root.attrib[att('FOLIO', v)])
+    if cfdidict['SERIE'] in root.attrib:
+        folio = root.attrib[cfdidict['SERIE']] + " - " + root.attrib[cfdidict['FOLIO']]
     else:
-        folio = str(root.attrib[att('FOLIO', v)])
-        # print('FOLIO: ', root.attrib[att('FOLIO', v)])
+        folio = str(root.attrib[cfdidict['FOLIO']])
     try:
         folio = int(folio)
         folio = "'" + str(folio)
     except:
         folio = folio
-    sbt = float(root.attrib[att('SUBTOT', v)])
-    # print('SUBTOTAL: ', '${:0,.2f}'.format(sbt).replace('$-', '-$'))
-    tot = float(root.attrib[att('TOT', v)])
-    # print('TOTAL: ', '${:0,.2f}'.format(tot).replace('$-', '-$'))
+    sbt = float(root.attrib[cfdidict['SUBTOT']])
+    tot = float(root.attrib[cfdidict['TOT']])
     for child in root:
         if child.tag.find('Emisor') > 0:
-            rfce = child.attrib[att('RFC', v)]
-            rse = child.attrib[att('RS', v)]
-            # print('RFC EMISOR: ', child.attrib[att('RFC', v)])
-            # print('RAZON SOCIAL EMISOR: ', child.attrib[att('RS', v)])
+            rfce = child.attrib[cfdidict['RFC']]
+            rse = child.attrib[cfdidict['RS']]
         else:
             if child.tag.find('Receptor') > 0:
-                rfcr = child.attrib[att('RFC', v)]
-                rsr = child.attrib[att('RS', v)]
-                # print('RFC RECEPTOR: ', child.attrib[att('RFC', v)])
-                # print('RAZON SOCIAL RECEPTOR: ', child.attrib[att('RS', v)])
+                rfcr = child.attrib[cfdidict['RFC']]
+                rsr = child.attrib[cfdidict['RS']]
             else:
                 if child.tag.find('Complemento') > 0:
                     for sch in child:
                         if sch.tag.find('TimbreFiscalDigital') > 0:
                             uuid = sch.attrib['UUID']
-                            # print('UUID: ', sch.attrib['UUID'])
                         else:
                             if sch.tag.find('Aerolineas') > 0:
                                 tua = float(sch.attrib['TUA'])
-                                # print('TUA: ', '${:0,.2f}'.format(tua).replace('$-', '-$'))
                                 for ssch in sch:
                                     if ssch.tag.find('OtrosCargos') > 0:
-                                        if att('OTCG', v) in ssch.attrib:
-                                            otcr = float(ssch.attrib[att('OTCG', v)])
-                                            # print('OTROS CARGOS: ', '${:0,.2f}'.format(otcr).replace('$-', '-$'))
+                                        if cfdidict['OTCG'] in ssch.attrib:
+                                            otcr = float(ssch.attrib[cfdidict['OTCG']])
                 else:
                     if child.tag.find('Impuestos') > 0:
-                        imp = float(child.attrib[att('IMPUESTOS', v)])
-                        # print('IMPUESTOS: ', '${:0,.2f}'.format(imp).replace('$-', '-$'))
+                        imp = float(child.attrib[cfdidict['IMPUESTOS']])
     dtdict = {'ARCHIVO': fln, 'VERSION': v, 'FECHA': fecha, 'FOLIO': folio, 'SUBTOTAL': sbt, 'TOTAL': tot,
                 'RFC EMISOR': rfce, 'EMISOR': rse, 'RFC RECEPTOR': rfcr, 'RECEPTOR': rsr, 'IMPUESTOS': imp,
                 'TUA': tua, 'OTROS CARGOS': otcr, 'UUID': uuid}
