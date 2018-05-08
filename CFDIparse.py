@@ -34,7 +34,10 @@ def parseCFDI(fln):
     if cfdidict['SERIE'] in root.attrib:
         folio = root.attrib[cfdidict['SERIE']] + " - " + root.attrib[cfdidict['FOLIO']]
     else:
-        folio = str(root.attrib[cfdidict['FOLIO']])
+        if cfdidict['FOLIO'] in root.attrib:
+            folio = str(root.attrib[cfdidict['FOLIO']])
+        else:
+            folio = ''
     try:
         folio = int(folio)
         folio = "'" + str(folio)
@@ -45,14 +48,28 @@ def parseCFDI(fln):
     for child in root:
         if child.tag.find('Emisor') > 0:
             rfce = child.attrib[cfdidict['RFC']]
-            rse = child.attrib[cfdidict['RS']]
+            if cfdidict['RS'] in child.attrib:
+                rse = child.attrib[cfdidict['RS']]
+            else:
+                rse = ''
         else:
             if child.tag.find('Receptor') > 0:
                 rfcr = child.attrib[cfdidict['RFC']]
-                rsr = child.attrib[cfdidict['RS']]
+                if cfdidict['RS'] in child.attrib:
+                    rsr = child.attrib[cfdidict['RS']]
+                else:
+                    rsr = ''
             else:
                 if child.tag.find('Complemento') > 0:
                     for sch in child:
+                        if folio == '':
+                            if sch.tag.find('CFDIRegistroFiscal') > 0:
+                                folio = sch.attrib['Folio']
+                                try:
+                                    folio = int(folio)
+                                    folio = "'" + str(folio)
+                                except:
+                                    folio = folio
                         if sch.tag.find('TimbreFiscalDigital') > 0:
                             uuid = sch.attrib['UUID']
                         else:
@@ -64,7 +81,14 @@ def parseCFDI(fln):
                                             otcr = float(ssch.attrib[cfdidict['OTCG']])
                 else:
                     if child.tag.find('Impuestos') > 0:
-                        imp = float(child.attrib[cfdidict['IMPUESTOS']])
+                        if cfdidict['IMPUESTOS'] in child.attrib:
+                            imp = float(child.attrib[cfdidict['IMPUESTOS']])
+                        else:
+                            for sch in child:
+                                if sch.tag.find('Traslados') > 0:
+                                    for ssch in sch:
+                                        if ssch.attrib['impuesto'] == "IVA":
+                                            imp = float(ssch.attrib['importe'])
     dtdict = {'ARCHIVO': fln, 'VERSION': v, 'FECHA': fecha, 'FOLIO': folio, 'SUBTOTAL': sbt, 'TOTAL': tot,
                 'RFC EMISOR': rfce, 'EMISOR': rse, 'RFC RECEPTOR': rfcr, 'RECEPTOR': rsr, 'IMPUESTOS': imp,
                 'TUA': tua, 'OTROS CARGOS': otcr, 'UUID': uuid}
@@ -87,10 +111,3 @@ for f in os.listdir('.'):
                 print('Error al extraer datos')
 csvfile2.close()
 
-'''
-filename = '3_2_Aerolinea_33C72F86-6BAE-4029-91F9-1B9CF5588607.xml'
-parseCFDI(filename)
-print('-------------------------------------------------------------')
-filename = '3_3 _ CFDI Estandar AC 20180-5.xml'
-parseCFDI(filename)
-'''
