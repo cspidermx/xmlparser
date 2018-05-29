@@ -1,4 +1,4 @@
-import xml.etree.ElementTree as etree
+from lxml import etree
 import os
 import csv
 from dateutil import parser
@@ -6,10 +6,17 @@ from dateutil.tz import gettz
 from datetime import datetime
 
 # tree = etree.parse('For3_3Testing_1.xml')
-tree = etree.parse('For3_3Testing_2.xml')
+tree = etree.parse('AAA15BD0-CC62-4660-AECC-2C11FF971B30.xml')
 root = tree.getroot()
+namespaces = root.nsmap
 if root.tag.lower().find('comprobante') == -1:
     print('ERROR')
+comp = root.findall('cfdi:Complemento', root.nsmap)[0]
+for child in comp:
+    if not child.tag.lower().find('timbrefiscaldigital') == -1:
+        for k in child.attrib:
+            if str(k).upper() == 'UUID':
+                print(k, ' = ', child.attrib[k])
 for k in root.attrib:
     # Version(3.3) | *Serie | *Folio | Fecha(AAAA-MM-DDThh:mm:ss) | Sello | *FormaPago(c_FormaPago) |
     # NoCertificado | Certificado | *CondicionesDePago(Texto Libre) | SubTotal | *Descuento |
@@ -110,7 +117,8 @@ for child in root:
         for subchild in child:
             if not subchild.tag.lower().find('timbrefiscaldigital') == -1:
                 for k in subchild.attrib:
-                    #
+                    # Version | UUID | FechaTimbrado | RfcProvCertif | *Leyenda | SelloCFD |
+                    # NoCertificadoSAT | SelloSAT
                     print(k, ' = ', subchild.attrib[k])
 
     if not child.tag.lower().find('addenda') == -1:  # * Opcional
