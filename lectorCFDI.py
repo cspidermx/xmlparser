@@ -5,7 +5,7 @@ from compCFDI import readcomp
 # from dateutil.tz import gettz
 # from datetime import datetime
 
-tree = etree.parse('ejemploConsumoDeCombustibles3_3.xml')
+tree = etree.parse('3_2_Aerolinea_33C72F86-6BAE-4029-91F9-1B9CF5588607.xml')
 root = tree.getroot()
 namespaces = root.nsmap
 if root.tag.lower().find('comprobante') == -1:
