@@ -1,7 +1,7 @@
 from lxml import etree
 from compConcepto import readcompC
 from compCFDI import readcomp
-from dbmgmnt import dbopen, dbclose, dbinsertCFDI, dbinsertCFDIrels, dbinsertemisor, dbinsertreceptor, dbinsertimpuestos
+from dbmgmnt import dbopen, dbclose, dbinsertCFDI
 # from dateutil import parser
 # from dateutil.tz import gettz
 # from datetime import datetime
@@ -19,30 +19,30 @@ for child in comp:
         for k in child.attrib:
             if str(k).upper() == 'UUID':
                 UUID = child.attrib[k]
-# Version(3.3) | *Serie | *Folio | Fecha(AAAA-MM-DDThh:mm:ss) | Sello | *FormaPago(c_FormaPago) |
-# NoCertificado | Certificado | *CondicionesDePago(Texto Libre) | SubTotal | *Descuento |
-# Moneda(c_Moneda) | *TipoCambio | Total | TipoDeComprobante(c_TipoDeComprobante) |
-# *MetodoPago | LugarExpedicion(Codigo Postal) | *Confirmacion
-CFDIkeys = ('version', 'serie', 'folio', 'fecha', 'sello', 'formapago', 'nocertificado', 'certificado',
-            'condicionesdepago', 'subtotal', 'descuento', 'moneda', 'tipocambio', 'total', 'tipodecomprobante',
-            'metodopago', 'lugarexpedicion', 'confirmacion')
-cfdidata = dict.fromkeys(CFDIkeys)  # Create data dictionary from definition
-rootdata = {k.lower(): v for k, v in root.attrib.items()}
-cfdidata = {**cfdidata, **rootdata}  # Merge 2 dictionaries, keep data from second one
+                #print(k, ' = ', child.attrib[k])
+comp = {'nodo': 'Comprobante'}
+cfdidata = root.attrib
 if 'UUID' not in cfdidata:
     cfdidata['UUID'] = UUID
-for k in rootdata:
-    if not k.lower().find('schema') == -1:
-        cfdidata.pop(k, None)
-dbinsertCFDI(dbcon, cfdidata)
+CFDIkeys = ('Version', 'Serie', 'Folio', 'Fecha', 'Sello', 'FormaPago', 'NoCertificado', 'Certificado',
+            'CondicionesDePago', 'SubTotal', 'Descuento', 'Moneda', 'TipoCambio', 'Total', 'TipoDeComprobante',
+            'MetodoPago', 'LugarExpedicion', 'Confirmacion')
+for k in root.attrib:
+    # Version(3.3) | *Serie | *Folio | Fecha(AAAA-MM-DDThh:mm:ss) | Sello | *FormaPago(c_FormaPago) |
+    # NoCertificado | Certificado | *CondicionesDePago(Texto Libre) | SubTotal | *Descuento |
+    # Moneda(c_Moneda) | *TipoCambio | Total | TipoDeComprobante(c_TipoDeComprobante) |
+    # *MetodoPago | LugarExpedicion(Codigo Postal) | *Confirmacion
+    if k.lower().find('schema') == -1:
+        comp[k] = root.attrib[k]
+print(comp)
 
 for child in root:
     if not child.tag.lower().find('cfdirelacionados') == -1:  # * Opcional
-        rels = {'nodo': 'cfdirelacionados', 'UUID': UUID}
+        rels = {'nodo': 'cfdirelacionados'}
         for k in child.attrib:
             # TipoRelacion(c_TipoRelacion)
             if k.lower().find('schema') == -1:
-                rels[k.lower()] = child.attrib[k]
+                rels[k] = child.attrib[k]
         for subchild in child:
             if not subchild.tag.lower().find('cfdirelacionado') == -1:
                 i = 0
@@ -50,28 +50,24 @@ for child in root:
                     # UUID
                     i += 1
                     if k.lower().find('schema') == -1:
-                        rels[(k + str(i)).lower()] = subchild.attrib[k]
-        dbinsertCFDIrels(dbcon, rels)
+                        rels[k + str(i)] = subchild.attrib[k]
+        print(rels)
 
     if not child.tag.lower().find('emisor') == -1:
-        emisorkeys = ('rfc', 'nombre', 'regimenfiscal')
-        emisor = dict.fromkeys(emisorkeys)
-        emisor['UUID'] = UUID
+        emisor = {'nodo': 'emisor'}
         for k in child.attrib:
             # RFC | *Nombre | RegimenFiscal(c_RegimenFiscal)
             if k.lower().find('schema') == -1:
-                emisor[k.lower()] = child.attrib[k]
-        dbinsertemisor(dbcon, emisor)
+                emisor[k] = child.attrib[k]
+        print(emisor)
 
     if not child.tag.lower().find('receptor') == -1:
-        receptorkeys = ('rfc', 'nombre', 'residenciafiscal', 'numregidtrib', 'usocfdi')
-        receptor = dict.fromkeys(receptorkeys)
-        receptor['UUID'] = UUID
+        receptor = {'nodo': 'receptor'}
         for k in child.attrib:
             # RFC | *Nombre | *ResidenciaFiscal | *NumRegIdTrib | UsoCFDI(c_UsoCFDI)
             if k.lower().find('schema') == -1:
-                receptor[k.lower()] = child.attrib[k]
-        dbinsertreceptor(dbcon, receptor)
+                receptor[k] = child.attrib[k]
+        print(receptor)
 
     if not child.tag.lower().find('conceptos') == -1:
         conceptos = {'nodo': 'concepto'}
@@ -157,13 +153,11 @@ for child in root:
                 conceptos['concepto' + str(i)] = concepto
         print(conceptos)
     if not child.tag.lower().find('impuestos') == -1:
-        impuestos = {'UUID': UUID, 'totalimpuestosretenidos': None, 'totalimpuestostrasladados': None}
+        impuestos = {'nodo': 'impuestos'}
         for k in child.attrib:
             # *TotalImpuestosRetenidos | *TotalImpuestosTrasladados
             if k.lower().find('schema') == -1:
-                impuestos[k.lower()] = child.attrib[k]
-        impuestos['retenciones'] = None
-        impuestos['traslados'] = None
+                impuestos[k] = child.attrib[k]
         for subchild in child:
             if not subchild.tag.lower().find('retenciones') == -1:
                 rtcs = {}
@@ -175,7 +169,7 @@ for child in root:
                         for k in ssubchild.attrib:
                             # Impuesto(c_Impuesto) | Importe
                             if k.lower().find('schema') == -1:
-                                rtc[k.lower()] = ssubchild.attrib[k]
+                                rtc[k] = ssubchild.attrib[k]
                         rtcs['retencion' + str(i_rtc)] = rtc
                 impuestos['retenciones'] = rtcs
             if not subchild.tag.lower().find('traslados') == -1:
@@ -188,10 +182,10 @@ for child in root:
                         for k in ssubchild.attrib:
                             # Impuesto(c_Impuesto) | TipoFactor | TasaOCuota(c_TasaOCuota) | Importe
                             if k.lower().find('schema') == -1:
-                                trld[k.lower()] = ssubchild.attrib[k]
+                                trld[k] = ssubchild.attrib[k]
                         trslds['traslado' + str(i_trld)] = trld
                 impuestos['traslados'] = trslds
-        dbinsertimpuestos(dbcon, impuestos)
+        print(impuestos)
     if not child.tag.lower().find('complemento') == -1:  # * Opcional
         comp = {'nodo': 'complemento'}
         for subchild in child:
