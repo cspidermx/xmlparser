@@ -1,14 +1,12 @@
 from lxml import etree
 from compConcepto import readcompC
 from compCFDI import readcomp
-from dbmgmnt import dbopen, dbclose, dbinsertCFDI
+import os
 # from dateutil import parser
 # from dateutil.tz import gettz
 # from datetime import datetime
 
-db = 'C:\\Users\\Charly\\Dropbox\\Work\\CFDIs\\CFDIs.sqlite'
-dbcon = dbopen(db)
-tree = etree.parse('For3_3Testing_1.xml')
+tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\ejemploinstEducativas3_3.xml"))
 root = tree.getroot()
 namespaces = root.nsmap
 if root.tag.lower().find('comprobante') == -1:
@@ -24,9 +22,6 @@ comp = {'nodo': 'Comprobante'}
 cfdidata = root.attrib
 if 'UUID' not in cfdidata:
     cfdidata['UUID'] = UUID
-CFDIkeys = ('Version', 'Serie', 'Folio', 'Fecha', 'Sello', 'FormaPago', 'NoCertificado', 'Certificado',
-            'CondicionesDePago', 'SubTotal', 'Descuento', 'Moneda', 'TipoCambio', 'Total', 'TipoDeComprobante',
-            'MetodoPago', 'LugarExpedicion', 'Confirmacion')
 for k in root.attrib:
     # Version(3.3) | *Serie | *Folio | Fecha(AAAA-MM-DDThh:mm:ss) | Sello | *FormaPago(c_FormaPago) |
     # NoCertificado | Certificado | *CondicionesDePago(Texto Libre) | SubTotal | *Descuento |
@@ -71,8 +66,8 @@ for child in root:
 
     if not child.tag.lower().find('conceptos') == -1:
         conceptos = {'nodo': 'concepto'}
+        i = 0
         for subchild in child:
-            i = 0
             if not subchild.tag.lower().find('concepto') == -1:
                 i += 1
                 concepto = {}
@@ -100,16 +95,16 @@ for child in root:
                                         c_imp['traslado' + str(j)] = c_imp_tras
                             if not sssubchild.tag.lower().find('retenciones') == -1:  # * Opcional
                                 c_imp_ret = {}
-                                k = 0
-                                for ssssubchild in child:
+                                kk = 0
+                                for ssssubchild in sssubchild:
                                     if not ssssubchild.tag.lower().find('retencion') == -1:
-                                        k += 1
+                                        kk += 1
                                         for k in ssssubchild.attrib:
                                             # Base | Impuesto(c_Impuesto) | TipoFactor(c_TipoFactor) |
                                             # TasaOCuota(c_TasaOCuota) | Importe
                                             if k.lower().find('schema') == -1:
                                                 c_imp_ret[k] = ssssubchild.attrib[k]
-                                        c_imp['traslado' + str(k)] = c_imp_ret
+                                        c_imp['retencion' + str(kk)] = c_imp_ret
                         concepto['impuestos'] = c_imp
                     if not ssubchild.tag.lower().find('informacionaduanera') == -1:  # * Opcional
                         inf_ad = {}
@@ -132,7 +127,8 @@ for child in root:
                             s = sssubchild.tag
                             complemento = s[s.find('}') + 1:len(s)]
                             comp = readcompC(complemento, sssubchild)
-                        concepto['complementoconcepto'] = comp
+                        if comp is not None:
+                            concepto['complementoconcepto'] = comp
                     if not ssubchild.tag.lower().find('parte') == -1:  # * Opcional
                         pte = {}
                         w += 1
@@ -204,5 +200,3 @@ for child in root:
         print(comp)
     if not child.tag.lower().find('addenda') == -1:  # * Opcional
         print('La definición es libre')
-
-dbclose(dbcon)

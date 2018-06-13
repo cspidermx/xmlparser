@@ -2,13 +2,14 @@ from lxml import etree
 from compConcepto import readcompC
 from compCFDI import readcomp
 from dbmgmnt import dbopen, dbclose, dbinsertCFDI, dbinsertCFDIrels, dbinsertemisor, dbinsertreceptor, dbinsertimpuestos
+import os
 # from dateutil import parser
 # from dateutil.tz import gettz
 # from datetime import datetime
 
 db = 'C:\\Users\\Charly\\Dropbox\\Work\\CFDIs\\CFDIs.sqlite'
 dbcon = dbopen(db)
-tree = etree.parse('For3_3Testing_1.xml')
+tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\For3_3Testing_1.xml"))
 root = tree.getroot()
 namespaces = root.nsmap
 if root.tag.lower().find('comprobante') == -1:
@@ -74,9 +75,9 @@ for child in root:
         dbinsertreceptor(dbcon, receptor)
 
     if not child.tag.lower().find('conceptos') == -1:
-        conceptos = {'nodo': 'concepto'}
+        conceptos = {'UUID': UUID}
+        i = 0
         for subchild in child:
-            i = 0
             if not subchild.tag.lower().find('concepto') == -1:
                 i += 1
                 concepto = {}
@@ -84,7 +85,7 @@ for child in root:
                     # ClaveProdServ(c_ClaveProdServ) | *NoIdentificacion | Cantidad | ClaveUnidad(c_ClaveUnidad)
                     # *Unidad | Descripcion | ValorUnitario | Importe | *Descuento |
                     if k.lower().find('schema') == -1:
-                        concepto[k] = subchild.attrib[k]
+                        concepto[k.lower()] = subchild.attrib[k]
                 w = 0
                 for ssubchild in subchild:
                     if not ssubchild.tag.lower().find('impuestos') == -1:  # * Opcional
@@ -100,35 +101,35 @@ for child in root:
                                             # Base | Impuesto(c_Impuesto) | TipoFactor(c_TipoFactor) |
                                             # *TasaOCuota(c_TasaOCuota) | *Importe
                                             if k.lower().find('schema') == -1:
-                                                c_imp_tras[k] = ssssubchild.attrib[k]
+                                                c_imp_tras[k.lower()] = ssssubchild.attrib[k]
                                         c_imp['traslado' + str(j)] = c_imp_tras
                             if not sssubchild.tag.lower().find('retenciones') == -1:  # * Opcional
                                 c_imp_ret = {}
-                                k = 0
-                                for ssssubchild in child:
+                                kk = 0
+                                for ssssubchild in sssubchild:
                                     if not ssssubchild.tag.lower().find('retencion') == -1:
-                                        k += 1
+                                        kk += 1
                                         for k in ssssubchild.attrib:
                                             # Base | Impuesto(c_Impuesto) | TipoFactor(c_TipoFactor) |
                                             # TasaOCuota(c_TasaOCuota) | Importe
                                             if k.lower().find('schema') == -1:
-                                                c_imp_ret[k] = ssssubchild.attrib[k]
-                                        c_imp['traslado' + str(k)] = c_imp_ret
+                                                c_imp_ret[k.lower()] = ssssubchild.attrib[k]
+                                        c_imp['retencion' + str(kk)] = c_imp_ret
                         concepto['impuestos'] = c_imp
                     if not ssubchild.tag.lower().find('informacionaduanera') == -1:  # * Opcional
                         inf_ad = {}
                         for k in ssubchild.attrib:
                             # NumeroPedimento
                             if k.lower().find('schema') == -1:
-                                inf_ad[k] = ssubchild.attrib[k]
+                                inf_ad[k.lower()] = ssubchild.attrib[k]
                         concepto['informacionaduanera'] = inf_ad
                     if not ssubchild.tag.lower().find('cuentapredial') == -1:  # * Opcional
                         cta_pred = {}
                         for k in ssubchild.attrib:
                             # Numero
                             if k.lower().find('schema') == -1:
-                                cta_pred[k] = ssubchild.attrib[k]
-                        concepto['informacionaduanera'] = cta_pred
+                                cta_pred[k.lower()] = ssubchild.attrib[k]
+                        concepto['cuentapredial'] = cta_pred
                     if not ssubchild.tag.lower().find('complementoconcepto') == -1:  # * Opcional
                         for sssubchild in ssubchild:
                             # opciones de schema:
@@ -136,7 +137,8 @@ for child in root:
                             s = sssubchild.tag
                             complemento = s[s.find('}') + 1:len(s)]
                             comp = readcompC(complemento, sssubchild)
-                        concepto['complementoconcepto'] = comp
+                        if comp is not None:
+                            concepto['complementoconcepto'] = comp
                     if not ssubchild.tag.lower().find('parte') == -1:  # * Opcional
                         pte = {}
                         w += 1
@@ -144,7 +146,7 @@ for child in root:
                             # ClaveProdServ(c_ClaveProdServ) | *NoIdentificacion | Cantidad | *Unidad | Descripcion
                             # *ValorUnitario | Importe
                             if k.lower().find('schema') == -1:
-                                pte[k] = ssubchild.attrib[k]
+                                pte[k.lower()] = ssubchild.attrib[k]
                         ii = 0
                         for sssubchild in child:
                             if not sssubchild.tag.lower().find('informacionaduanera') == -1:  # * Opcional
@@ -152,7 +154,7 @@ for child in root:
                                 for k in sssubchild.attrib:
                                     # NumeroPedimento
                                     if k.lower().find('schema') == -1:
-                                        pte[k + str(ii)] = sssubchild.attrib[k]
+                                        pte[(k + str(ii)).lower()] = sssubchild.attrib[k]
                         concepto['parte' + str(w)] = pte
                 conceptos['concepto' + str(i)] = concepto
         print(conceptos)
