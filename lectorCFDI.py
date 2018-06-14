@@ -2,6 +2,7 @@ from lxml import etree
 from compConcepto import readcompC
 from compCFDI import readcomp
 from dbmgmnt import dbopen, dbclose, dbinsertCFDI, dbinsertCFDIrels, dbinsertemisor, dbinsertreceptor, dbinsertimpuestos
+from dbmgmnt import dbinsertconceptos, dbinsertcomplementos
 import os
 # from dateutil import parser
 # from dateutil.tz import gettz
@@ -157,7 +158,7 @@ for child in root:
                                         pte[(k + str(ii)).lower()] = sssubchild.attrib[k]
                         concepto['parte' + str(w)] = pte
                 conceptos['concepto' + str(i)] = concepto
-        print(conceptos)
+        dbinsertconceptos(dbcon, conceptos)
     if not child.tag.lower().find('impuestos') == -1:
         impuestos = {'UUID': UUID, 'totalimpuestosretenidos': None, 'totalimpuestostrasladados': None}
         for k in child.attrib:
@@ -195,7 +196,7 @@ for child in root:
                 impuestos['traslados'] = trslds
         dbinsertimpuestos(dbcon, impuestos)
     if not child.tag.lower().find('complemento') == -1:  # * Opcional
-        comp = {'nodo': 'complemento'}
+        comp = {'nodo': 'complemento', 'UUID': UUID}
         for subchild in child:
             if not subchild.tag.lower().find('timbrefiscaldigital') == -1:
                 tifidi = {}
@@ -203,14 +204,15 @@ for child in root:
                     # Version | UUID | FechaTimbrado | RfcProvCertif | *Leyenda | SelloCFD |
                     # NoCertificadoSAT | SelloSAT
                     if k.lower().find('schema') == -1:
-                        tifidi[k] = subchild.attrib[k]
+                        tifidi[k.lower()] = subchild.attrib[k]
                 comp['timbrefiscaldigital'] = tifidi
             else:
                 s = subchild.tag
                 complemento = s[s.find('}') + 1:len(s)]
                 comp[complemento] = readcomp(complemento, subchild)
-        print(comp)
+        dbinsertcomplementos(dbcon, comp)
     if not child.tag.lower().find('addenda') == -1:  # * Opcional
-        print('La definición es libre')
+        # print('La definición es personalizada por empresa')
+        None
 
 dbclose(dbcon)

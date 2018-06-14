@@ -6,7 +6,7 @@ import os
 # from dateutil.tz import gettz
 # from datetime import datetime
 
-tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\ejemploinstEducativas3_3.xml"))
+tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\For3_3Testing_1.xml"))
 root = tree.getroot()
 namespaces = root.nsmap
 if root.tag.lower().find('comprobante') == -1:
@@ -191,7 +191,7 @@ for child in root:
                     # Version | UUID | FechaTimbrado | RfcProvCertif | *Leyenda | SelloCFD |
                     # NoCertificadoSAT | SelloSAT
                     if k.lower().find('schema') == -1:
-                        tifidi[k] = subchild.attrib[k]
+                        tifidi[k.lower()] = subchild.attrib[k]
                 comp['timbrefiscaldigital'] = tifidi
             else:
                 s = subchild.tag
