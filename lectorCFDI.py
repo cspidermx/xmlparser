@@ -8,7 +8,8 @@ import os
 # from dateutil.tz import gettz
 # from datetime import datetime
 
-db = 'C:\\Users\\Charly\\Dropbox\\Work\\CFDIs\\CFDIs.sqlite'
+# db = 'C:\\Users\\Charly\\Dropbox\\Work\\CFDIs\\CFDIs.sqlite'
+db = 'E:\\Dropbox\\Dropbox\\Work\\CFDIs\\CFDIs.sqlite'
 dbcon = dbopen(db)
 tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\For3_3Testing_1.xml"))
 root = tree.getroot()
@@ -16,6 +17,7 @@ namespaces = root.nsmap
 if root.tag.lower().find('comprobante') == -1:
     print('ERROR')
 comp = root.findall('cfdi:Complemento', root.nsmap)[0]
+UUID = ''
 for child in comp:
     if not child.tag.lower().find('timbrefiscaldigital') == -1:
         for k in child.attrib:

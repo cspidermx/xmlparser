@@ -21,22 +21,21 @@
 																'tipocuenta': '05'}
 										}
 					},
- 'vehiculousado': 	{	'montoadquisicion': '480000.00', 
-						'montoenajenacion': '230000.00', 
-						'clavevehicular': '8372323',
-						'marca': 'CHEVROLET', 
-						'tipo': 'SILVERADO 4X4 EXT CREW', 
-						'modelo': '2011', 
-						'valor': '250000.00', 
-						'niv': 'CHS23812321232', 
-						'version': '1.0', 
-						'numeromotor': '38261267381232132', 
-						'numeroserie': 'KS82817DS214', 
-						'informacionaduanera1': 	{	'numero': '882I49E20123', 
-														'fecha': '2014-03-10', 
-														'aduana': 'McAllen - Reynosa Anzalduas'
-													}
-					},					
+ 'ine': {	'version': '1.1', 
+			'tipoproceso': 'Campaña', 
+			'tipocomite': 'Ejecutivo Nacional', 
+			'idcontabilidad': '1', 
+			'entidad1': {	'claveentidad': 'OAX', 
+							'ambito': 'Local'
+						}, 
+			'entidad2': {	'claveentidad': 'GUA', 
+							'ambito': 'Local'
+						}, 
+			'entidad3': {	'claveentidad': 'AGU', 
+							'ambito': 'Local', 
+							'contabilidad1': 	{	'idcontabilidad': '2'}
+						}
+		},					
  'timbrefiscaldigital': {	'version': '1.1', 
 							'uuid': 'ddef7415-45f9-45f9-b69d-b65ef425ac63', 
 							'fechatimbrado': '2017-09-26T16:52:36', 

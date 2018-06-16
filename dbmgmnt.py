@@ -892,3 +892,70 @@ def dbinsertcomplementos (c, data):
                     c.commit()
                     cur.close()
                     cur = c.cursor()
+        elif con == 'parcialesconstruccion':
+            # version | numperlicoaut
+            compl = ('uuid', 'id', 'version', 'numperlicoaut')
+            detallecompl = dict.fromkeys(compl)
+            detallecompl['uuid'] = UUID
+            detallecompl['id'] = idcomp(c, 'parcialesconstruccion')
+            for dt in data[con]:
+                if dt in detallecompl:
+                    detallecompl[dt] = data[con][dt]
+                elif not dt.find('informacionaduanera') == -1:
+                    dtstr = data[con][dt]
+                    # calle | noexterior | nointerior | colonia | localidad | referencia | municipio | estado |
+                    # codigopostal
+                    subcompl = ('id', 'calle', 'noexterior', 'nointerior', 'colonia', 'localidad', 'referencia',
+                                'municipio', 'estado', 'codigopostal')
+                    detallesubcompl = dict.fromkeys(subcompl)
+                    detallesubcompl = {**detallesubcompl, **dtstr}
+                    detallesubcompl['id'] = detallecompl['id']
+                    reg = (detallesubcompl['id'], detallesubcompl['calle'], detallesubcompl['noexterior'],
+                           detallesubcompl['nointerior'], detallesubcompl['colonia'], detallesubcompl['localidad'],
+                           detallesubcompl['referencia'], detallesubcompl['municipio'], detallesubcompl['estado'],
+                           detallesubcompl['codigopostal'])
+                    cur.execute("INSERT INTO Inmueble_parcialesconstruccion VALUES(?,?,?,?,?,?,?,?,?,?)", reg)
+                    c.commit()
+                    cur.close()
+                    cur = c.cursor()
+            if detallecompl['version'] is not None:
+                detallecompl['version'] = float(detallecompl['version'])
+            reg = (detallecompl['uuid'], detallecompl['id'], detallecompl['version'], detallecompl['numperlicoaut'])
+            cur.execute("INSERT INTO parcialesconstruccion VALUES(?,?,?,?)", reg)
+            c.commit()
+            cur.close()
+            cur = c.cursor()
+        elif con == 'ine':
+            # version | tipoproceso | tipocomite | idcontabilidad
+            compl = ('uuid', 'id', 'version', 'tipoproceso', 'tipocomite', 'idcontabilidad')
+            detallecompl = dict.fromkeys(compl)
+            detallecompl['uuid'] = UUID
+            detallecompl['id'] = idcomp(c, 'INE')
+            for dt in data[con]:
+                if dt in detallecompl:
+                    detallecompl[dt] = data[con][dt]
+                elif not dt.find('entidad') == -1:
+                    dtstr = data[con][dt]
+                    # claveentidad | ambito | idcontabilidad
+                    subcompl = ('id', 'claveentidad', 'ambito', 'idcontabilidad')
+                    detallesubcompl = dict.fromkeys(subcompl)
+                    detallesubcompl['id'] = detallecompl['id']
+                    for det in dtstr:
+                        if det in detallesubcompl:
+                            detallesubcompl[det] = dtstr[det]
+                        elif not det.find('contabilidad') == -1:
+                            detallesubcompl['idcontabilidad'] = dtstr[det]['idcontabilidad']
+                    reg = (detallesubcompl['id'], detallesubcompl['claveentidad'], detallesubcompl['ambito'],
+                           detallesubcompl['idcontabilidad'])
+                    cur.execute("INSERT INTO INE_Entidad VALUES(?,?,?,?)", reg)
+                    c.commit()
+                    cur.close()
+                    cur = c.cursor()
+            if detallecompl['version'] is not None:
+                detallecompl['version'] = float(detallecompl['version'])
+            reg = (detallecompl['uuid'], detallecompl['id'], detallecompl['version'], detallecompl['tipoproceso'],
+                   detallecompl['tipocomite'], detallecompl['idcontabilidad'])
+            cur.execute("INSERT INTO INE VALUES(?,?,?,?,?,?)", reg)
+            c.commit()
+            cur.close()
+            cur = c.cursor()
