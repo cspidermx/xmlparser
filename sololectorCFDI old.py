@@ -6,7 +6,7 @@ import os
 # from dateutil.tz import gettz
 # from datetime import datetime
 
-tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\For3_3Testing_1.xml"))
+tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\ejemploVehiculoUsado3_2.xml"))
 root = tree.getroot()
 namespaces = root.nsmap
 if root.tag.lower().find('comprobante') == -1:
@@ -28,7 +28,7 @@ for k in root.attrib:
     # Moneda(c_Moneda) | *TipoCambio | Total | TipoDeComprobante(c_TipoDeComprobante) |
     # *MetodoPago | LugarExpedicion(Codigo Postal) | *Confirmacion
     if k.lower().find('schema') == -1:
-        comp[k] = root.attrib[k]
+        comp[k.lower()] = root.attrib[k]
 print(comp)
 
 for child in root:
@@ -37,7 +37,7 @@ for child in root:
         for k in child.attrib:
             # TipoRelacion(c_TipoRelacion)
             if k.lower().find('schema') == -1:
-                rels[k] = child.attrib[k]
+                rels[k.lower()] = child.attrib[k]
         for subchild in child:
             if not subchild.tag.lower().find('cfdirelacionado') == -1:
                 i = 0
@@ -45,7 +45,7 @@ for child in root:
                     # UUID
                     i += 1
                     if k.lower().find('schema') == -1:
-                        rels[k + str(i)] = subchild.attrib[k]
+                        rels[(k + str(i)).lower()] = subchild.attrib[k]
         print(rels)
 
     if not child.tag.lower().find('emisor') == -1:
@@ -53,7 +53,7 @@ for child in root:
         for k in child.attrib:
             # RFC | *Nombre | RegimenFiscal(c_RegimenFiscal)
             if k.lower().find('schema') == -1:
-                emisor[k] = child.attrib[k]
+                emisor[k.lower()] = child.attrib[k]
         print(emisor)
 
     if not child.tag.lower().find('receptor') == -1:
@@ -61,7 +61,7 @@ for child in root:
         for k in child.attrib:
             # RFC | *Nombre | *ResidenciaFiscal | *NumRegIdTrib | UsoCFDI(c_UsoCFDI)
             if k.lower().find('schema') == -1:
-                receptor[k] = child.attrib[k]
+                receptor[k.lower()] = child.attrib[k]
         print(receptor)
 
     if not child.tag.lower().find('conceptos') == -1:
@@ -75,7 +75,7 @@ for child in root:
                     # ClaveProdServ(c_ClaveProdServ) | *NoIdentificacion | Cantidad | ClaveUnidad(c_ClaveUnidad)
                     # *Unidad | Descripcion | ValorUnitario | Importe | *Descuento |
                     if k.lower().find('schema') == -1:
-                        concepto[k] = subchild.attrib[k]
+                        concepto[k.lower()] = subchild.attrib[k]
                 w = 0
                 for ssubchild in subchild:
                     if not ssubchild.tag.lower().find('impuestos') == -1:  # * Opcional
@@ -91,7 +91,7 @@ for child in root:
                                             # Base | Impuesto(c_Impuesto) | TipoFactor(c_TipoFactor) |
                                             # *TasaOCuota(c_TasaOCuota) | *Importe
                                             if k.lower().find('schema') == -1:
-                                                c_imp_tras[k] = ssssubchild.attrib[k]
+                                                c_imp_tras[k.lower()] = ssssubchild.attrib[k]
                                         c_imp['traslado' + str(j)] = c_imp_tras
                             if not sssubchild.tag.lower().find('retenciones') == -1:  # * Opcional
                                 c_imp_ret = {}
@@ -103,7 +103,7 @@ for child in root:
                                             # Base | Impuesto(c_Impuesto) | TipoFactor(c_TipoFactor) |
                                             # TasaOCuota(c_TasaOCuota) | Importe
                                             if k.lower().find('schema') == -1:
-                                                c_imp_ret[k] = ssssubchild.attrib[k]
+                                                c_imp_ret[k.lower()] = ssssubchild.attrib[k]
                                         c_imp['retencion' + str(kk)] = c_imp_ret
                         concepto['impuestos'] = c_imp
                     if not ssubchild.tag.lower().find('informacionaduanera') == -1:  # * Opcional
@@ -111,14 +111,14 @@ for child in root:
                         for k in ssubchild.attrib:
                             # NumeroPedimento
                             if k.lower().find('schema') == -1:
-                                inf_ad[k] = ssubchild.attrib[k]
+                                inf_ad[k.lower()] = ssubchild.attrib[k]
                         concepto['informacionaduanera'] = inf_ad
                     if not ssubchild.tag.lower().find('cuentapredial') == -1:  # * Opcional
                         cta_pred = {}
                         for k in ssubchild.attrib:
                             # Numero
                             if k.lower().find('schema') == -1:
-                                cta_pred[k] = ssubchild.attrib[k]
+                                cta_pred[k.lower()] = ssubchild.attrib[k]
                         concepto['informacionaduanera'] = cta_pred
                     if not ssubchild.tag.lower().find('complementoconcepto') == -1:  # * Opcional
                         for sssubchild in ssubchild:
@@ -136,7 +136,7 @@ for child in root:
                             # ClaveProdServ(c_ClaveProdServ) | *NoIdentificacion | Cantidad | *Unidad | Descripcion
                             # *ValorUnitario | Importe
                             if k.lower().find('schema') == -1:
-                                pte[k] = ssubchild.attrib[k]
+                                pte[k.lower()] = ssubchild.attrib[k]
                         ii = 0
                         for sssubchild in child:
                             if not sssubchild.tag.lower().find('informacionaduanera') == -1:  # * Opcional
@@ -144,7 +144,7 @@ for child in root:
                                 for k in sssubchild.attrib:
                                     # NumeroPedimento
                                     if k.lower().find('schema') == -1:
-                                        pte[k + str(ii)] = sssubchild.attrib[k]
+                                        pte[(k + str(ii)).lower()] = sssubchild.attrib[k]
                         concepto['parte' + str(w)] = pte
                 conceptos['concepto' + str(i)] = concepto
         print(conceptos)
@@ -153,7 +153,7 @@ for child in root:
         for k in child.attrib:
             # *TotalImpuestosRetenidos | *TotalImpuestosTrasladados
             if k.lower().find('schema') == -1:
-                impuestos[k] = child.attrib[k]
+                impuestos[k.lower()] = child.attrib[k]
         for subchild in child:
             if not subchild.tag.lower().find('retenciones') == -1:
                 rtcs = {}
@@ -165,7 +165,7 @@ for child in root:
                         for k in ssubchild.attrib:
                             # Impuesto(c_Impuesto) | Importe
                             if k.lower().find('schema') == -1:
-                                rtc[k] = ssubchild.attrib[k]
+                                rtc[k.lower()] = ssubchild.attrib[k]
                         rtcs['retencion' + str(i_rtc)] = rtc
                 impuestos['retenciones'] = rtcs
             if not subchild.tag.lower().find('traslados') == -1:
@@ -178,12 +178,12 @@ for child in root:
                         for k in ssubchild.attrib:
                             # Impuesto(c_Impuesto) | TipoFactor | TasaOCuota(c_TasaOCuota) | Importe
                             if k.lower().find('schema') == -1:
-                                trld[k] = ssubchild.attrib[k]
+                                trld[k.lower()] = ssubchild.attrib[k]
                         trslds['traslado' + str(i_trld)] = trld
                 impuestos['traslados'] = trslds
         print(impuestos)
     if not child.tag.lower().find('complemento') == -1:  # * Opcional
-        comp = {'nodo': 'complemento'}
+        comp = {'nodo': 'complemento', 'UUID': UUID}
         for subchild in child:
             if not subchild.tag.lower().find('timbrefiscaldigital') == -1:
                 tifidi = {}
@@ -196,7 +196,7 @@ for child in root:
             else:
                 s = subchild.tag
                 complemento = s[s.find('}') + 1:len(s)]
-                comp[complemento] = readcomp(complemento, subchild)
+                comp[complemento.lower()] = readcomp(complemento, subchild)
         print(comp)
     if not child.tag.lower().find('addenda') == -1:  # * Opcional
         print('La definición es libre')

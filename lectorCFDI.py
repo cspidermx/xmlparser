@@ -209,7 +209,7 @@ for child in root:
             else:
                 s = subchild.tag
                 complemento = s[s.find('}') + 1:len(s)]
-                comp[complemento] = readcomp(complemento, subchild)
+                comp[complemento.lower()] = readcomp(complemento, subchild)
         dbinsertcomplementos(dbcon, comp)
     if not child.tag.lower().find('addenda') == -1:  # * Opcional
         # print('La definición es personalizada por empresa')
