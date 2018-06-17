@@ -3,10 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="94245874-85cc-43eb-801c-98a3a75f57c8" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/XMLs/data for console.txt" beforeDir="false" afterPath="$PROJECT_DIR$/XMLs/data for console.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dbmgmnt.py" beforeDir="false" afterPath="$PROJECT_DIR$/dbmgmnt.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lectorCFDI.py" beforeDir="false" afterPath="$PROJECT_DIR$/lectorCFDI.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sololectorCFDI.py" beforeDir="false" afterPath="$PROJECT_DIR$/sololectorCFDI.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -41,8 +38,8 @@
       <file leaf-file-name="sololectorCFDI.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sololectorCFDI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
-              <caret line="8" column="69" lean-forward="true" selection-start-line="8" selection-start-column="69" selection-end-line="8" selection-end-column="69" />
+            <state relative-caret-position="85">
+              <caret line="8" column="69" selection-start-line="8" selection-start-column="69" selection-end-line="8" selection-end-column="69" />
               <folding>
                 <element signature="e#0#22#0" expanded="true" />
               </folding>
@@ -53,8 +50,8 @@
       <file leaf-file-name="lectorCFDI.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lectorCFDI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-2649">
-              <caret line="19" column="8" selection-start-line="19" selection-start-column="8" selection-end-line="19" selection-end-column="8" />
+            <state relative-caret-position="425">
+              <caret line="25" column="45" lean-forward="true" selection-start-line="25" selection-start-column="45" selection-end-line="25" selection-end-column="45" />
               <folding>
                 <element signature="e#0#22#0" expanded="true" />
               </folding>
@@ -65,8 +62,8 @@
       <file leaf-file-name="dbmgmnt.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/dbmgmnt.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="768">
-              <caret line="957" column="59" selection-start-line="957" selection-start-column="59" selection-end-line="957" selection-end-column="59" />
+            <state relative-caret-position="238">
+              <caret line="14" selection-start-line="14" selection-end-line="19" selection-end-column="15" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -95,8 +92,8 @@
       <file leaf-file-name="xsdtodb.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/xsdtodb.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1343">
-              <caret line="79" column="74" selection-start-line="79" selection-start-column="74" selection-end-line="79" selection-end-column="74" />
+            <state relative-caret-position="17">
+              <caret line="14" column="51" lean-forward="true" selection-start-line="14" selection-start-column="47" selection-end-line="14" selection-end-column="51" />
             </state>
           </provider>
         </entry>
@@ -143,7 +140,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-8" />
+    <option name="x" value="-115" />
+    <option name="y" value="9" />
     <option name="width" value="1382" />
     <option name="height" value="754" />
   </component>
@@ -546,13 +544,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/xsdtodb.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1343">
-          <caret line="79" column="74" selection-start-line="79" selection-start-column="74" selection-end-line="79" selection-end-column="74" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/CFDIparse.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="187">
@@ -600,6 +591,23 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/sololectorCFDI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="8" column="69" selection-start-line="8" selection-start-column="69" selection-end-line="8" selection-end-column="69" />
+          <folding>
+            <element signature="e#0#22#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/xsdtodb.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="14" column="51" lean-forward="true" selection-start-line="14" selection-start-column="47" selection-end-line="14" selection-end-column="51" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/compCFDI.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="34">
@@ -609,18 +617,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lectorCFDI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2649">
-          <caret line="19" column="8" selection-start-line="19" selection-start-column="8" selection-end-line="19" selection-end-column="8" />
-          <folding>
-            <element signature="e#0#22#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sololectorCFDI.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="8" column="69" lean-forward="true" selection-start-line="8" selection-start-column="69" selection-end-line="8" selection-end-column="69" />
+        <state relative-caret-position="425">
+          <caret line="25" column="45" lean-forward="true" selection-start-line="25" selection-start-column="45" selection-end-line="25" selection-end-column="45" />
           <folding>
             <element signature="e#0#22#0" expanded="true" />
           </folding>
@@ -629,8 +627,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/dbmgmnt.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="768">
-          <caret line="957" column="59" selection-start-line="957" selection-start-column="59" selection-end-line="957" selection-end-column="59" />
+        <state relative-caret-position="238">
+          <caret line="14" selection-start-line="14" selection-end-line="19" selection-end-column="15" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>

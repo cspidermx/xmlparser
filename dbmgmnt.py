@@ -335,7 +335,7 @@ def dbinsertconceptos (c, data):
                                                         detallesubcomp['fecha'] = datetime.strptime(
                                                             detallesubcomp['fecha'], '%Y-%m-%d')
                                                     reg = (detallesubcomp['cve_aduana'], detallesubcomp['numero'],
-                                                           detallesubcompu['fecha'], detallesubcomp['aduana'])
+                                                           detallesubcomp['fecha'], detallesubcomp['aduana'])
                                                     cur.execute("INSERT INTO T_Aduana VALUES(?,?,?,?)", reg)
                                                     c.commit()
                                                     cur.close()
@@ -381,7 +381,7 @@ def dbinsertconceptos (c, data):
                                                     if detalleparte['importe'] is not None:
                                                         detalleparte['importe'] = float(detalleparte['importe'])
                                                     if detalleparte['descuento'] is not None:
-                                                        detalleparte['descuento'] = floa(detalleparte['descuento'])
+                                                        detalleparte['descuento'] = float(detalleparte['descuento'])
                                                     reg = (detalleparte['id'], detalleparte['numparte'],
                                                            detalleparte['claveprodserv'],
                                                            detalleparte['cantidad'], detalleparte['unidad'],
