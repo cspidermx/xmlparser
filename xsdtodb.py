@@ -77,7 +77,7 @@ def getroot(root, indent, namespaces):
             print('    ' * indent, getattrvalues(element, namespaces))
 
 
-tree = etree.parse('http://www.sat.gob.mx/sitio_internet/cfd/iedu/iedu.xsd')
+tree = etree.parse('C:\\Users\\Charly\\Dropbox\\Work\\CFDIs\\XSDs\\Complementos\\Nomina\\nomina12.xsd')
 root = tree.getroot()
 namespaces = root.nsmap
 getroot(root, 0, namespaces)

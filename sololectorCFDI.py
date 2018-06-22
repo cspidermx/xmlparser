@@ -2,11 +2,13 @@ from lxml import etree
 from compConcepto import readcompC
 from compCFDI import readcomp
 import os
+from dbmgmnt import dbopen, dbclose, dbinsert_cfdi, dbinsert_cfdi_rels, dbinsertemisor, dbinsertreceptor, dbinsertimpuestos
+from dbmgmnt import dbinsertconceptos, dbinsertcomplementos
 # from dateutil import parser
 # from dateutil.tz import gettz
 # from datetime import datetime
 
-tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\ejemploINE3_2.xml"))
+tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\ejemploConceptoParte3_3.xml"))
 root = tree.getroot()
 namespaces = root.nsmap
 if root.tag.lower().find('comprobante') == -1:
@@ -18,7 +20,7 @@ for child in comp:
         for k in child.attrib:
             if str(k).upper() == 'UUID':
                 UUID = child.attrib[k]
-                #print(k, ' = ', child.attrib[k])
+                # print(k, ' = ', child.attrib[k])
 comp = {'nodo': 'Comprobante'}
 cfdidata = root.attrib
 if 'UUID' not in cfdidata:

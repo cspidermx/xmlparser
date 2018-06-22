@@ -3,7 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="94245874-85cc-43eb-801c-98a3a75f57c8" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/XMLs/data for console.txt" beforeDir="false" afterPath="$PROJECT_DIR$/XMLs/data for console.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/compCFDI.py" beforeDir="false" afterPath="$PROJECT_DIR$/compCFDI.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dbmgmnt.py" beforeDir="false" afterPath="$PROJECT_DIR$/dbmgmnt.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lectorCFDI.py" beforeDir="false" afterPath="$PROJECT_DIR$/lectorCFDI.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sololectorCFDI.py" beforeDir="false" afterPath="$PROJECT_DIR$/sololectorCFDI.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/xsdtodb.py" beforeDir="false" afterPath="$PROJECT_DIR$/xsdtodb.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -38,8 +43,8 @@
       <file leaf-file-name="sololectorCFDI.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/sololectorCFDI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="85">
-              <caret line="8" column="69" selection-start-line="8" selection-start-column="69" selection-end-line="8" selection-end-column="69" />
+            <state relative-caret-position="170">
+              <caret line="10" column="79" selection-start-line="10" selection-start-column="79" selection-end-line="10" selection-end-column="79" />
               <folding>
                 <element signature="e#0#22#0" expanded="true" />
               </folding>
@@ -50,8 +55,8 @@
       <file leaf-file-name="lectorCFDI.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lectorCFDI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="425">
-              <caret line="25" column="45" lean-forward="true" selection-start-line="25" selection-start-column="45" selection-end-line="25" selection-end-column="45" />
+            <state relative-caret-position="119">
+              <caret line="40" column="42" selection-start-line="40" selection-start-column="42" selection-end-line="40" selection-end-column="42" />
               <folding>
                 <element signature="e#0#22#0" expanded="true" />
               </folding>
@@ -62,8 +67,8 @@
       <file leaf-file-name="dbmgmnt.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/dbmgmnt.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="14" selection-start-line="14" selection-end-line="19" selection-end-column="15" />
+            <state relative-caret-position="323">
+              <caret line="286" column="40" selection-start-line="286" selection-start-column="40" selection-end-line="286" selection-end-column="52" />
               <folding>
                 <element signature="e#0#14#0" expanded="true" />
               </folding>
@@ -74,8 +79,8 @@
       <file leaf-file-name="compCFDI.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/compCFDI.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="34">
-              <caret line="2" column="26" selection-start-line="2" selection-start-column="10" selection-end-line="2" selection-end-column="26" />
+            <state relative-caret-position="85">
+              <caret line="5" column="45" selection-start-line="5" selection-start-column="45" selection-end-line="5" selection-end-column="45" />
             </state>
           </provider>
         </entry>
@@ -92,8 +97,8 @@
       <file leaf-file-name="xsdtodb.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/xsdtodb.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="17">
-              <caret line="14" column="51" lean-forward="true" selection-start-line="14" selection-start-column="47" selection-end-line="14" selection-end-column="51" />
+            <state relative-caret-position="188">
+              <caret line="79" column="89" selection-start-line="79" selection-start-column="89" selection-end-line="79" selection-end-column="89" />
             </state>
           </provider>
         </entry>
@@ -110,10 +115,27 @@
   <component name="FindInProjectRecents">
     <findStrings>
       <find>**</find>
-      <find>strp</find>
       <find>[k</find>
+      <find>'UUID'</find>
+      <find>'uuid'</find>
+      <find>T_Im</find>
+      <find>cur.execute</find>
+      <find>'fecha'</find>
       <find>strptime</find>
+      <find>strp</find>
+      <find>strpt</find>
+      <find>c.commit()</find>
+      <find>numconcepto</find>
+      <find>idtimpuestos</find>
+      <find>idaduana(c)</find>
+      <find>idpredial(c)</find>
+      <find>idpartes(c)</find>
+      <find>idift(c)</find>
     </findStrings>
+    <replaceStrings>
+      <replace>'UUID'</replace>
+      <replace># c.commit()</replace>
+    </replaceStrings>
   </component>
   <component name="Git.Settings">
     <option name="ROOT_SYNC" value="DONT_SYNC" />
@@ -128,11 +150,11 @@
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/CFDIparse.py" />
         <option value="$PROJECT_DIR$/catalogosCFDI.py" />
-        <option value="$PROJECT_DIR$/xsdtodb.py" />
         <option value="$PROJECT_DIR$/compConcepto.py" />
-        <option value="$PROJECT_DIR$/compCFDI.py" />
         <option value="$PROJECT_DIR$/sololectorCFDI old.py" />
         <option value="$PROJECT_DIR$/venv/dbmgmnt.py" />
+        <option value="$PROJECT_DIR$/xsdtodb.py" />
+        <option value="$PROJECT_DIR$/compCFDI.py" />
         <option value="$PROJECT_DIR$/lectorCFDI.py" />
         <option value="$PROJECT_DIR$/sololectorCFDI.py" />
         <option value="$PROJECT_DIR$/dbmgmnt.py" />
@@ -151,7 +173,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -163,11 +184,12 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="vcs.Git" />
+    <property name="settings.editor.selected.configurable" value="Errors" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -225,19 +247,18 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1382" height="754" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24920969" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24851191" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
-      <window_info anchor="bottom" id="Run" order="2" />
       <window_info anchor="bottom" id="Version Control" order="8" />
-      <window_info anchor="bottom" x="-1920" y="23" width="1920" height="1017" id="Python Console" order="9" type="WINDOWED" weight="0.24945533" />
+      <window_info anchor="bottom" x="-1366" y="23" width="1366" height="715" id="Python Console" order="9" weight="0.24837662" />
+      <window_info anchor="bottom" id="Run" order="2" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Terminal" order="10" weight="0.31154683" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.39935064" />
+      <window_info anchor="bottom" id="Terminal" order="10" weight="0.3116883" />
       <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39935064" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -256,22 +277,19 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/dbmgmnt.py">
+    <entry file="file://$PROJECT_DIR$/xsdtodb.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15096">
-          <caret line="891" column="30" lean-forward="true" selection-start-line="891" selection-start-column="30" selection-end-line="891" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="238">
+          <caret line="14" column="51" lean-forward="true" selection-start-line="14" selection-start-column="47" selection-end-line="14" selection-end-column="51" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CFDIparse.py">
+    <entry file="file://$PROJECT_DIR$/lectorCFDI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="16" column="25" selection-start-line="16" selection-start-column="4" selection-end-line="16" selection-end-column="25" />
+        <state relative-caret-position="663">
+          <caret line="39" column="29" lean-forward="true" selection-start-line="39" selection-start-column="29" selection-end-line="39" selection-end-column="29" />
           <folding>
-            <element signature="e#0#37#0" expanded="true" />
+            <element signature="e#0#22#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -591,34 +609,34 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sololectorCFDI.py">
+    <entry file="file://$PROJECT_DIR$/xsdtodb.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="188">
+          <caret line="79" column="89" selection-start-line="79" selection-start-column="89" selection-end-line="79" selection-end-column="89" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/compCFDI.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="85">
-          <caret line="8" column="69" selection-start-line="8" selection-start-column="69" selection-end-line="8" selection-end-column="69" />
+          <caret line="5" column="45" selection-start-line="5" selection-start-column="45" selection-end-line="5" selection-end-column="45" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lectorCFDI.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="40" column="42" selection-start-line="40" selection-start-column="42" selection-end-line="40" selection-end-column="42" />
           <folding>
             <element signature="e#0#22#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/xsdtodb.py">
+    <entry file="file://$PROJECT_DIR$/sololectorCFDI.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="14" column="51" lean-forward="true" selection-start-line="14" selection-start-column="47" selection-end-line="14" selection-end-column="51" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/compCFDI.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="34">
-          <caret line="2" column="26" selection-start-line="2" selection-start-column="10" selection-end-line="2" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lectorCFDI.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="425">
-          <caret line="25" column="45" lean-forward="true" selection-start-line="25" selection-start-column="45" selection-end-line="25" selection-end-column="45" />
+        <state relative-caret-position="170">
+          <caret line="10" column="79" selection-start-line="10" selection-start-column="79" selection-end-line="10" selection-end-column="79" />
           <folding>
             <element signature="e#0#22#0" expanded="true" />
           </folding>
@@ -627,8 +645,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/dbmgmnt.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="14" selection-start-line="14" selection-end-line="19" selection-end-column="15" />
+        <state relative-caret-position="323">
+          <caret line="286" column="40" selection-start-line="286" selection-start-column="40" selection-end-line="286" selection-end-column="52" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
           </folding>

@@ -2,7 +2,8 @@
 comps = {'ImpuestosLocales', 'LeyendasFiscales', 'PFintegranteCoordinado', 'TuristaPasajeroExtranjero',
          'Complemento_SPEI', 'CFDIRegistroFiscal', 'PagoEnEspecie', 'ValesDeDespensa', 'ConsumoDeCombustibles',
          'Aerolineas', 'NotariosPublicos', 'VehiculoUsado', 'parcialesconstruccion', 'renovacionysustitucionvehiculos',
-         'certificadodedestruccion', 'obrasarteantiguedades', 'INE', 'Donatarias', 'Divisas'}
+         'certificadodedestruccion', 'obrasarteantiguedades', 'INE', 'Donatarias', 'Divisas',
+         'EstadoDeCuentaCombustible', 'Nomina'}
 
 
 def readcomp(tipo, root):

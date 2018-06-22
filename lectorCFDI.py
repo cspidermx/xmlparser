@@ -1,15 +1,15 @@
 from lxml import etree
 from compConcepto import readcompC
 from compCFDI import readcomp
-from dbmgmnt import dbopen, dbclose, dbinsertCFDI, dbinsertCFDIrels, dbinsertemisor, dbinsertreceptor, dbinsertimpuestos
+from dbmgmnt import dbopen, dbclose, dbinsert_cfdi, dbinsert_cfdi_rels, dbinsertemisor, dbinsertreceptor, dbinsertimpuestos
 from dbmgmnt import dbinsertconceptos, dbinsertcomplementos
 import os
 # from dateutil import parser
 # from dateutil.tz import gettz
 # from datetime import datetime
 
-# db = 'C:\\Users\\Charly\\Dropbox\\Work\\CFDIs\\CFDIs.sqlite'
-db = 'E:\\Dropbox\\Dropbox\\Work\\CFDIs\\CFDIs.sqlite'
+db = 'C:\\Users\\Charly\\Dropbox\\Work\\CFDIs\\CFDIs.sqlite'
+# db = 'E:\\Dropbox\\Dropbox\\Work\\CFDIs\\CFDIs.sqlite'
 dbcon = dbopen(db)
 tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\For3_3Testing_1.xml"))
 root = tree.getroot()
@@ -38,7 +38,8 @@ if 'UUID' not in cfdidata:
 for k in rootdata:
     if not k.lower().find('schema') == -1:
         cfdidata.pop(k, None)
-dbinsertCFDI(dbcon, cfdidata)
+if dbinsert_cfdi(dbcon, cfdidata) == 'NO':
+    raise SystemExit(0)
 
 for child in root:
     if not child.tag.lower().find('cfdirelacionados') == -1:  # * Opcional
@@ -55,7 +56,7 @@ for child in root:
                     i += 1
                     if k.lower().find('schema') == -1:
                         rels[(k + str(i)).lower()] = subchild.attrib[k]
-        dbinsertCFDIrels(dbcon, rels)
+        dbinsert_cfdi_rels(dbcon, rels)
 
     if not child.tag.lower().find('emisor') == -1:
         emisorkeys = ('rfc', 'nombre', 'regimenfiscal')
