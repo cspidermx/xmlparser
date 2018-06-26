@@ -11,7 +11,7 @@ import os
 db = 'C:\\Users\\Charly\\Dropbox\\Work\\CFDIs\\CFDIs.sqlite'
 # db = 'E:\\Dropbox\\Dropbox\\Work\\CFDIs\\CFDIs.sqlite'
 dbcon = dbopen(db)
-tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\For3_3Testing_1.xml"))
+tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\ejemplocertificadodedestruccion3_3.xml"))
 root = tree.getroot()
 namespaces = root.nsmap
 if root.tag.lower().find('comprobante') == -1:
@@ -38,7 +38,9 @@ if 'UUID' not in cfdidata:
 for k in rootdata:
     if not k.lower().find('schema') == -1:
         cfdidata.pop(k, None)
-if dbinsert_cfdi(dbcon, cfdidata) == 'NO':
+incfdi = dbinsert_cfdi(dbcon, cfdidata)
+if incfdi != 'OK':
+    print('Error al insertar ({})'.format(incfdi))
     raise SystemExit(0)
 
 for child in root:
@@ -218,4 +220,5 @@ for child in root:
         # print('La definición es personalizada por empresa')
         None
 
+dbcon.commit()
 dbclose(dbcon)

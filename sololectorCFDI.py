@@ -8,7 +8,7 @@ from dbmgmnt import dbinsertconceptos, dbinsertcomplementos
 # from dateutil.tz import gettz
 # from datetime import datetime
 
-tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\ejemploConceptoParte3_3.xml"))
+tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\For3_3Testing_1.xml"))
 root = tree.getroot()
 namespaces = root.nsmap
 if root.tag.lower().find('comprobante') == -1:
