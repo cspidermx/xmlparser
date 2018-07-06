@@ -49,6 +49,8 @@ def convtipo(strdta, tipo):
             r = datetime.strptime(strdta, '%Y-%m-%dT%H:%M:%S')
         elif tipo == 'date2':
             r = datetime.strptime(strdta, '%Y-%m-%d')
+        elif tipo == 'hora':
+            r = datetime.strptime(strdta, '%H:%M:%S.%f')
     return r
 
 
@@ -195,10 +197,11 @@ def insertpart(c, parte, idparte, numparte):
         if str(type(parte[det])) == "<class 'str'>":
             detalleparte[det] = parte[det]
         else:
-            detalleparte['id_taduana'] = idcomp(c, 'T_Aduana', 'cve_Aduana', 7)
-            inseradd(c, parte['informacionaduanera'], detalleparte['id_taduana'], 'aduana')
+            if not det.find('informacionaduanera') == -1:
+                detalleparte['id_taduana'] = idcomp(c, 'T_Aduana', 'cve_Aduana', 7)
+                inseradd(c, parte[det], detalleparte['id_taduana'], 'aduana')
             # c.commit()
-    detalleparte['cantidad'] = convtipo(detalleparte['cantidad'], 'int')
+    detalleparte['cantidad'] = convtipo(detalleparte['cantidad'], 'float')
     detalleparte['valorunitario'] = convtipo(detalleparte['valorunitario'], 'float')
     detalleparte['importe'] = convtipo(detalleparte['importe'], 'float')
     detalleparte['descuento'] = convtipo(detalleparte['descuento'], 'float')
@@ -207,6 +210,20 @@ def insertpart(c, parte, idparte, numparte):
            detalleparte['valorunitario'], detalleparte['importe'], detalleparte['descuento'],
            detalleparte['id_taduana'])
     c.execute("INSERT INTO C_Parte VALUES(?,?,?,?,?,?,?,?,?,?,?)", reg)
+
+
+def insertadomce(c, data_, iddml):
+    # calle | numeroexterior | numerointerior | colonia | localidad | referencia | municipio | estado | pais |
+    # codigopostal
+    domdata = ('id', 'calle', 'numeroexterior', 'numerointerior', 'colonia', 'localidad', 'referencia', 'municipio',
+               'estado', 'pais', 'codigopostal')
+    domicilio = dict.fromkeys(domdata)
+    domicilio.update(data_)
+    domicilio['id'] = iddml
+    reg = (domicilio['id'], domicilio['calle'], domicilio['numeroexterior'], domicilio['numerointerior'],
+           domicilio['colonia'], domicilio['localidad'], domicilio['referencia'], domicilio['municipio'],
+           domicilio['estado'], domicilio['pais'], domicilio['codigopostal'])
+    c.execute("INSERT INTO Domicilio_CE VALUES(?,?,?,?,?,?,?,?,?,?,?)", reg)
 
 
 def dbinsertconceptos(c, data):
@@ -258,7 +275,7 @@ def dbinsertconceptos(c, data):
                                                    'rfcpago')
                                         detallecomp = dict.fromkeys(detcomp)
                                         detallecomp['id'] = detalleconcepto['numcpto']
-                                        detallecomp = {**detallecomp, **addondict}
+                                        detallecomp.update(addondict)
                                         detallecomp.pop('schema', None)
                                         reg = (detallecomp['id'], detallecomp['version'], detallecomp['nombrealumno'],
                                                detallecomp['curp'], detallecomp['niveleducativo'],
@@ -270,7 +287,7 @@ def dbinsertconceptos(c, data):
                                         detcomp = ('id', 'version', 'tar')
                                         detallecomp = dict.fromkeys(detcomp)
                                         detallecomp['id'] = detalleconcepto['numcpto']
-                                        detallecomp = {**detallecomp, **addondict}
+                                        detallecomp.update(addondict)
                                         detallecomp.pop('schema', None)
                                         reg = (detallecomp['id'], detallecomp['version'], detallecomp['tar'])
                                         cur.execute("INSERT INTO compC_acreditamientoIEPS VALUES(?,?,?)", reg)
@@ -285,12 +302,12 @@ def dbinsertconceptos(c, data):
                                                 detallecomp[dt1] = addondict[dt1]
                                             elif not dt1.find('aduanera') == -1:
                                                     detallecomp['id_aduana'] = idcomp(c, 'T_Aduana', 'cve_Aduana', 7)
-                                                    inseradd(c, addondict[dt], detallecomp['cve_aduana'], 'aduana')
+                                                    inseradd(c, addondict[dt1], detallecomp['cve_aduana'], 'aduana')
                                                     # c.commit()
                                             elif not dt1.find('parte') == -1:
-                                                detallecomp['cve_partes'] = idcomp(c, 'C_Parte', 'cve_Predial', 5)
-                                                i = int(dt.replace('parte', ''))
-                                                insertpart(c, addondict[dt], detallecomp['cve_partes'], i)
+                                                detallecomp['cve_partes'] = idcomp(c, 'C_Parte', 'id', 5)
+                                                i = convtipo(dt1.replace('parte', ''), 'int')
+                                                insertpart(c, addondict[dt1], detallecomp['cve_partes'], i)
                                                 # c.commit()
                                         detallecomp.pop('schema', None)
                                         reg = (detallecomp['id'], detallecomp['version'], detallecomp['clavevehicular'],
@@ -332,21 +349,6 @@ def dbinsertconceptos(c, data):
                                                             tipo = 'RETENCION'
                                                         insertimp(c, addondict[dt_][lvl][imp],
                                                                   detalletercero['cve_impuestos'], tipo)
-                                                        '''detalleimp = {**detalleimp, **addondict[dt_][lvl][imp]}
-                                                        if 'tasa' in detalleimp:
-                                                            detalleimp['tasaocuota'] = detalleimp.pop('tasa')
-                                                        if detalleimp['base'] is not None:
-                                                            detalleimp['base'] = float(detalleimp['base'])
-                                                        if detalleimp['tasaocuota'] is not None:
-                                                            detalleimp['tasaocuota'] = float(detalleimp['tasaocuota'])
-                                                        if detalleimp['importe'] is not None:
-                                                            detalleimp['importe'] = float(detalleimp['importe'])
-                                                        reg = (detalleimp['id'], detalleimp['tipo'], detalleimp['base'],
-                                                               detalleimp['impuesto'],
-                                                               detalleimp['tipofactor'], detalleimp['tasaocuota'],
-                                                               detalleimp['importe'])
-                                                        cur.execute("INSERT INTO T_Impuestos VALUES(?,?,?,?,?,?,?)",
-                                                                    reg)'''
                                                         # c.commit()
                                             elif not str(dt_).find('fiscal') == -1:
                                                 detalletercero['id_ift'] = idcomp(c, 'cC_PCdT_InformacionFiscalTercero',
@@ -357,7 +359,6 @@ def dbinsertconceptos(c, data):
                                                 detalle_ift = dict.fromkeys(det_ift)
                                                 detalle_ift['id'] = detalletercero['id_ift']
                                                 detalle_ift.update(addondict[dt_])
-                                                # detalle_ift = {**detalle_ift, **addondict[dt_]}
                                                 detalle_ift['rfc'] = addondict['rfc']
                                                 reg = (detalle_ift['id'], detalle_ift['rfc'], detalle_ift['calle'],
                                                        detalle_ift['noexterior'], detalle_ift['nointerior'],
@@ -371,28 +372,10 @@ def dbinsertconceptos(c, data):
                                             elif not str(dt_).find('aduanera') == -1:
                                                 detalletercero['cve_aduana'] = idcomp(c, 'T_Aduana', 'cve_Aduana', 7)
                                                 inseradd(c, addondict[dt_], detalletercero['cve_aduana'], 'aduana')
-                                                '''detadu = ('cve_aduana', 'numero', 'fecha', 'aduana')
-                                                detalleadu = dict.fromkeys(detadu)
-                                                detalleadu['cve_aduana'] = detalletercero['cve_aduana']
-                                                detalleadu = {**detalleadu, **addondict[dt_]}
-                                                if detalleadu['fecha'] is not None:
-                                                    # "YYYY-MM-DD"
-                                                    detalleadu['fecha'] = datetime.strptime(detalleadu['fecha'],
-                                                                                            '%Y-%m-%d')
-                                                reg = (detalleadu['cve_aduana'], detalleadu['numero'],
-                                                       detalleadu['fecha'],
-                                                       detalleadu['aduana'])
-                                                cur.execute("INSERT INTO T_Aduana VALUES(?,?,?,?)", reg)'''
                                                 # c.commit()
                                             elif not str(dt_).find('predial') == -1:
                                                 detalletercero['cve_predial'] = idcomp(c, 'T_Predial', 'cve_Predial', 5)
                                                 inseradd(c, addondict[dt_], detalletercero['cve_predial'], 'predial')
-                                                '''detpred = ('cve_predial', 'numero')
-                                                detallepred = dict.fromkeys(detpred)
-                                                detallepred['cve_predial'] = detalletercero['cve_predial']
-                                                detallepred['numero'] = addondict[dt_]['numero']
-                                                reg = (detallepred['cve_predial'], detallepred['numero'])
-                                                cur.execute("INSERT INTO T_Predial VALUES(?,?)", reg)'''
                                                 # c.commit()
                                         reg = (detalletercero['id'], detalletercero['cve_partes'],
                                                detalletercero['cve_impuestos'], detalletercero['version'],
@@ -403,53 +386,14 @@ def dbinsertconceptos(c, data):
                                         # c.commit()
                                 else:
                                     # el addon es 'parte#'
-                                    detalleconcepto['cvePartes'] = idcomp(c, 'C_Parte', 'cve_Predial', 5)
-                                    '''detparte = ('id', 'numparte', 'claveprodserv', 'cantidad', 'unidad',
-                                                'noidentificacion', 'descripcion', 'valorunitario', 'importe',
-                                                'descuento', 'id_taduana')
-                                    detalleparte = dict.fromkeys(detparte)
-                                    detalleparte['id'] = detalleconcepto['cvePartes']'''
-                                    i = int(addon.replace('parte', ''))
+                                    detalleconcepto['cvePartes'] = idcomp(c, 'C_Parte', 'id', 5)
+                                    i = convtipo(addon.replace('parte', ''), 'int')
                                     insertpart(c, addondict, detalleconcepto['cvePartes'], i)
-                                    '''detalleparte['numparte'] = '{0:03d}'.format(i)
-                                    for _dt in addondict:
-                                        if str(type(addondict[_dt])) == "<class 'str'>":
-                                            detalleparte[_dt] = addondict[_dt]
-                                        else:
-                                            # informacionaduanera: NumeroPedimento
-                                            detalleparte['id_taduana'] = idcomp(c, 'T_Aduana', 'cve_Aduana', 7)
-                                            detadu = ('cve_aduana', 'numero', 'fecha', 'aduana')
-                                            detalleadu = dict.fromkeys(detadu)
-                                            detalleadu['cve_aduana'] = detalleparte['id_taduana']
-                                            # NumeroPedimento
-                                            detalleadu['numero'] = addondict['informacionaduanera']['numeropedimento']
-                                            reg = (detalleadu['cve_aduana'], detalleadu['numero'], detalleadu['fecha'],
-                                                   detalleadu['aduana'])
-                                            cur.execute("INSERT INTO T_Aduana VALUES(?,?,?,?)", reg)
-                                            # c.commit()
-                                    if detalleparte['cantidad'] is not None:
-                                        detalleparte['cantidad'] = int(detalleparte['cantidad'])
-                                    if detalleparte['valorunitario'] is not None:
-                                        detalleparte['valorunitario'] = float(detalleparte['valorunitario'])
-                                    if detalleparte['importe'] is not None:
-                                        detalleparte['importe'] = float(detalleparte['importe'])
-                                    if detalleparte['descuento'] is not None:
-                                        detalleparte['descuento'] = float(detalleparte['descuento'])
-                                    reg = (detalleparte['id'], detalleparte['numparte'], detalleparte['claveprodserv'],
-                                           detalleparte['cantidad'], detalleparte['unidad'],
-                                           detalleparte['noidentificacion'], detalleparte['descripcion'],
-                                           detalleparte['valorunitario'], detalleparte['importe'],
-                                           detalleparte['descuento'], detalleparte['id_taduana'])
-                                    cur.execute("INSERT INTO C_Parte VALUES(?,?,?,?,?,?,?,?,?,?,?)", reg)'''
                                     # c.commit()
-            if detalleconcepto['cantidad'] is not None:
-                detalleconcepto['cantidad'] = float(detalleconcepto['cantidad'])
-            if detalleconcepto['valorunitario'] is not None:
-                detalleconcepto['valorunitario'] = float(detalleconcepto['valorunitario'])
-            if detalleconcepto['importe'] is not None:
-                detalleconcepto['importe'] = float(detalleconcepto['importe'])
-            if detalleconcepto['descuento'] is not None:
-                detalleconcepto['descuento'] = float(detalleconcepto['descuento'])
+            detalleconcepto['cantidad'] = convtipo(detalleconcepto['cantidad'], 'float')
+            detalleconcepto['valorunitario'] = convtipo(detalleconcepto['valorunitario'], 'float')
+            detalleconcepto['importe'] = convtipo(detalleconcepto['importe'], 'float')
+            detalleconcepto['descuento'] = convtipo(detalleconcepto['descuento'], 'float')
             reg = (detalleconcepto['UUID'], detalleconcepto['numcpto'], detalleconcepto['claveprodserv'],
                    detalleconcepto['noidentificacion'], detalleconcepto['cantidad'], detalleconcepto['claveunidad'],
                    detalleconcepto['unidad'], detalleconcepto['descripcion'], detalleconcepto['valorunitario'],
@@ -470,9 +414,8 @@ def dbinsertcomplementos(c, data):
             tfd = ('uuid', 'version', 'fechatimbrado', 'rfcprovcertif', 'leyenda', 'sellocfd',
                    'nocertificadosat', 'sellosat')
             detalletfd = dict.fromkeys(tfd)  # Create data dictionary from definition
-            detalletfd = {**detalletfd, **data[con]}  # Merge 2 dictionaries, keep data from second one
-            if detalletfd['fechatimbrado'] is not None:
-                detalletfd['fechatimbrado'] = datetime.strptime(detalletfd['fechatimbrado'], '%Y-%m-%dT%H:%M:%S')
+            detalletfd.update(data[con])
+            detalletfd['fechatimbrado'] = convtipo(detalletfd['fechatimbrado'], 'date1')
             reg = (detalletfd['uuid'], detalletfd['version'], detalletfd['fechatimbrado'],
                    detalletfd['rfcprovcertif'], detalletfd['leyenda'], detalletfd['sellocfd'],
                    detalletfd['nocertificadosat'], detalletfd['sellosat'])
@@ -496,12 +439,9 @@ def dbinsertcomplementos(c, data):
                             reg = (otcgs[det]['codigocargo'], float(otcgs[det]['importe']), detallecompl['id'])
                             cur.execute("INSERT INTO Aerolineas_OtrosCargos VALUES(?,?,?)", reg)
                             # c.commit()
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
-            if detallecompl['tua'] is not None:
-                detallecompl['tua'] = float(detallecompl['tua'])
-            if detallecompl['totalotroscargos'] is not None:
-                detallecompl['totalotroscargos'] = float(detallecompl['totalotroscargos'])
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
+            detallecompl['tua'] = convtipo(detallecompl['tua'], 'float')
+            detallecompl['totalotroscargos'] = convtipo(detallecompl['totalotroscargos'], 'float')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['tua'],
                    detallecompl['totalotroscargos'])
             cur.execute("INSERT INTO Aerolineas VALUES(?,?,?,?,?)", reg)
@@ -511,13 +451,10 @@ def dbinsertcomplementos(c, data):
             compl = ('UUID', 'id', 'version', 'noautorizacion', 'fechaautorizacion', 'leyenda')
             detallecompl = dict.fromkeys(compl)
             detallecompl.update(data[con])
-            # detallecompl = {**detallecompl, **data[con]}
             detallecompl['UUID'] = uuid
             detallecompl['id'] = idcomp(c, 'Donatarias')
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
-            if detallecompl['fechaautorizacion'] is not None:
-                detallecompl['fechaautorizacion'] = datetime.strptime(detallecompl['fechaautorizacion'], '%Y-%m-%d')
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
+            detallecompl['fechaautorizacion'] = convtipo(detallecompl['fechaautorizacion'], 'date2')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['noautorizacion'],
                    detallecompl['fechaautorizacion'], detallecompl['leyenda'])
             cur.execute("INSERT INTO Donatarias VALUES(?,?,?,?,?,?)", reg)
@@ -527,11 +464,9 @@ def dbinsertcomplementos(c, data):
             compl = ('UUID', 'id', 'version', 'tipooperacion')
             detallecompl = dict.fromkeys(compl)
             detallecompl.update(data[con])
-            # detallecompl = {**detallecompl, **data[con]}
             detallecompl['UUID'] = uuid
             detallecompl['id'] = idcomp(c, 'Divisas')
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['tipooperacion'])
             cur.execute("INSERT INTO Divisas VALUES(?,?,?,?)", reg)
             # c.commit()
@@ -540,11 +475,9 @@ def dbinsertcomplementos(c, data):
             compl = ('UUID', 'id', 'version', 'clavevehicular', 'placa', 'rfcpf')
             detallecompl = dict.fromkeys(compl)
             detallecompl.update(data[con])
-            # detallecompl = {**detallecompl, **data[con]}
             detallecompl['UUID'] = uuid
             detallecompl['id'] = idcomp(c, 'PFintegranteCoordinado')
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['clavevehicular'],
                    detallecompl['placa'], detallecompl['rfcpf'])
             cur.execute("INSERT INTO PFintegranteCoordinado VALUES(?,?,?,?,?,?)", reg)
@@ -554,11 +487,9 @@ def dbinsertcomplementos(c, data):
             compl = ('UUID', 'id', 'version', 'folio')
             detallecompl = dict.fromkeys(compl)
             detallecompl.update(data[con])
-            # detallecompl = {**detallecompl, **data[con]}
             detallecompl['UUID'] = uuid
             detallecompl['id'] = idcomp(c, 'CFDIRegistroFiscal')
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['folio'])
             cur.execute("INSERT INTO CFDIRegistroFiscal VALUES(?,?,?,?)", reg)
             # c.commit()
@@ -568,11 +499,9 @@ def dbinsertcomplementos(c, data):
                      'pzaartdim')
             detallecompl = dict.fromkeys(compl)
             detallecompl.update(data[con])
-            # detallecompl = {**detallecompl, **data[con]}
             detallecompl['UUID'] = uuid
             detallecompl['id'] = idcomp(c, 'PagoEnEspecie')
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['cvepic'],
                    detallecompl['foliosoldon'], detallecompl['pzaartnombre'], detallecompl['pzaarttecn'],
                    detallecompl['pzaartaprod'], detallecompl['pzaartdim'])
@@ -585,17 +514,12 @@ def dbinsertcomplementos(c, data):
                      'subtotal', 'iva', 'fechaadquisicion', 'característicasdeobraopieza')
             detallecompl = dict.fromkeys(compl)
             detallecompl.update(data[con])
-            # detallecompl = {**detallecompl, **data[con]}
             detallecompl['UUID'] = uuid
             detallecompl['id'] = idcomp(c, 'obrasarteantiguedades')
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
-            if detallecompl['subtotal'] is not None:
-                detallecompl['subtotal'] = float(detallecompl['subtotal'])
-            if detallecompl['iva'] is not None:
-                detallecompl['iva'] = float(detallecompl['iva'])
-            if detallecompl['fechaadquisicion'] is not None:
-                detallecompl['fechaadquisicion'] = datetime.strptime(detallecompl['fechaadquisicion'], '%Y-%m-%d')
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
+            detallecompl['subtotal'] = convtipo(detallecompl['subtotal'], 'float')
+            detallecompl['iva'] = convtipo(detallecompl['iva'], 'float')
+            detallecompl['fechaadquisicion'] = convtipo(detallecompl['fechaadquisicion'], 'date2')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['tipobien'],
                    detallecompl['otrostipobien'], detallecompl['tituloadquirido'], detallecompl['otrostituloadquirido'],
                    detallecompl['subtotal'], detallecompl['iva'], detallecompl['fechaadquisicion'],
@@ -615,12 +539,10 @@ def dbinsertcomplementos(c, data):
                     ley = data[con][dt]
                     detallecompl = dict.fromkeys(compl)
                     detallecompl.update(ley)
-                    # detallecompl = {**detallecompl, **ley}
                     detallecompl['UUID'] = uuid
                     detallecompl['id'] = idcomp(c, 'LeyendasFiscales')
                     detallecompl['version'] = vers
-                    if detallecompl['version'] is not None:
-                        detallecompl['version'] = float(detallecompl['version'])
+                    detallecompl['version'] = convtipo(detallecompl['version'], 'float')
                     reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'],
                            detallecompl['disposicionfiscal'], detallecompl['norma'], detallecompl['textoleyenda'])
                     cur.execute("INSERT INTO LeyendasFiscales VALUES(?,?,?,?,?,?)", reg)
@@ -640,18 +562,14 @@ def dbinsertcomplementos(c, data):
                     subcompl = ('id', 'via', 'tipoid', 'numeroid', 'nacionalidad', 'empresatransporte', 'idtransporte')
                     detallesubcompl = dict.fromkeys(subcompl)
                     detallesubcompl.update(dtstr)
-                    # detallesubcompl = {**detallesubcompl, **dtstr}
                     detallesubcompl['id'] = detallecompl['id']
                     reg = (detallesubcompl['id'], detallesubcompl['via'], detallesubcompl['tipoid'],
                            detallesubcompl['numeroid'], detallesubcompl['nacionalidad'],
                            detallesubcompl['empresatransporte'], detallesubcompl['idtransporte'])
                     cur.execute("INSERT INTO datosTransito VALUES(?,?,?,?,?,?,?)", reg)
                     # c.commit()
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
-            if detallecompl['fechadetransito'] is not None:
-                detallecompl['fechadetransito'] = datetime.strptime(detallecompl['fechadetransito'],
-                                                                    '%Y-%m-%dT%H:%M:%S')
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
+            detallecompl['fechadetransito'] = convtipo(detallecompl['fechadetransito'], 'date1')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['fechadetransito'],
                    detallecompl['tipotransito'])
             cur.execute("INSERT INTO TuristaPasajeroExtranjero VALUES(?,?,?,?,?)", reg)
@@ -673,21 +591,16 @@ def dbinsertcomplementos(c, data):
                                     'importe')
                         detallesubcompl = dict.fromkeys(subcompl)
                         detallesubcompl.update(dtstr)
-                        # detallesubcompl = {**detallesubcompl, **dtstr}
                         detallesubcompl['id'] = detallecompl['id']
-                        if detallesubcompl['fecha'] is not None:
-                            detallesubcompl['fecha'] = datetime.strptime(detallesubcompl['fecha'], '%Y-%m-%dT%H:%M:%S')
-                        if detallesubcompl['importe'] is not None:
-                            detallesubcompl['importe'] = float(detallesubcompl['importe'])
+                        detallesubcompl['fecha'] = convtipo(detallesubcompl['fecha'], 'date1')
+                        detallesubcompl['importe'] = convtipo(detallesubcompl['importe'], 'float')
                         reg = (detallesubcompl['id'], detallesubcompl['identificador'], detallesubcompl['fecha'],
                                detallesubcompl['rfc'], detallesubcompl['curp'], detallesubcompl['nombre'],
                                detallesubcompl['numseguridadsocial'], detallesubcompl['importe'])
                         cur.execute("INSERT INTO Conceptos_ValesDeDespensa VALUES(?,?,?,?,?,?,?,?)", reg)
                         # c.commit()
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
-            if detallecompl['total'] is not None:
-                detallecompl['total'] = float(detallecompl['total'])
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
+            detallecompl['total'] = convtipo(detallecompl['total'], 'float')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['tipooperacion'],
                    detallecompl['registropatronal'], detallecompl['numerodecuenta'], detallecompl['total'])
             cur.execute("INSERT INTO ValesDeDespensa VALUES(?,?,?,?,?,?,?)", reg)
@@ -708,16 +621,6 @@ def dbinsertcomplementos(c, data):
                     detallecompl['cve_aduana'] = idcomp(c, 'T_Aduana', 'cve_Aduana', 7)
                     inseradd(c, dtstr, detallecompl['cve_aduana'], 'aduana')
                     # numero | fecha | aduana
-                    '''subcompl = ('cve_aduana', 'numero', 'fecha', 'aduana')
-                    detallesubcompl = dict.fromkeys(subcompl)
-                    detallesubcompl.update(dtstr)
-                    # detallesubcompl = {**detallesubcompl, **dtstr}
-                    detallesubcompl['cve_aduana'] = detallecompl['cve_aduana']
-                    if detallesubcompl['fecha'] is not None:
-                        detallesubcompl['fecha'] = datetime.strptime(detallesubcompl['fecha'], '%Y-%m-%d')
-                    reg = (detallesubcompl['cve_aduana'], detallesubcompl['numero'], detallesubcompl['fecha'],
-                           detallesubcompl['aduana'])
-                    cur.execute("INSERT INTO T_Aduana VALUES(?,?,?,?)", reg)'''
                     # c.commit()
         elif con == 'parcialesconstruccion':
             # version | numperlicoaut
@@ -736,7 +639,6 @@ def dbinsertcomplementos(c, data):
                                 'municipio', 'estado', 'codigopostal')
                     detallesubcompl = dict.fromkeys(subcompl)
                     detallesubcompl.update(dtstr)
-                    # detallesubcompl = {**detallesubcompl, **dtstr}
                     detallesubcompl['id'] = detallecompl['id']
                     reg = (detallesubcompl['id'], detallesubcompl['calle'], detallesubcompl['noexterior'],
                            detallesubcompl['nointerior'], detallesubcompl['colonia'], detallesubcompl['localidad'],
@@ -744,8 +646,7 @@ def dbinsertcomplementos(c, data):
                            detallesubcompl['codigopostal'])
                     cur.execute("INSERT INTO Inmueble_parcialesconstruccion VALUES(?,?,?,?,?,?,?,?,?,?)", reg)
                     # c.commit()
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['numperlicoaut'])
             cur.execute("INSERT INTO parcialesconstruccion VALUES(?,?,?,?)", reg)
             # c.commit()
@@ -773,8 +674,7 @@ def dbinsertcomplementos(c, data):
                            detallesubcompl['idcontabilidad'])
                     cur.execute("INSERT INTO INE_Entidad VALUES(?,?,?,?)", reg)
                     # c.commit()
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['tipoproceso'],
                    detallecompl['tipocomite'], detallecompl['idcontabilidad'])
             cur.execute("INSERT INTO INE VALUES(?,?,?,?,?,?)", reg)
@@ -807,27 +707,11 @@ def dbinsertcomplementos(c, data):
                                 trld = cptos[detail]
                                 for dis in trld:
                                     insertimp(c, trld[dis], detallesubcompl['id_impuestos'], 'TRASLADO')
-                                    '''impuesto = ('id', 'tipo', 'base', 'impuesto', 'tipofactor', 'tasaocuota', 'importe')
-                                    detimp = dict.fromkeys(impuesto)
-                                    detimp.update(trld[dis])
-                                    detimp['tipo'] = 'TRASLADO'
-                                    detimp['id'] = detallesubcompl['id_impuestos']
-                                if detimp['tasaocuota'] is not None:
-                                    detimp['tasaocuota'] = float(detimp['tasaocuota'])
-                                if detimp['importe'] is not None:
-                                    detimp['importe'] = float(detimp['importe'])
-                                reg = (detimp['id'], detimp['tipo'], detimp['base'], detimp['impuesto'],
-                                       detimp['tipofactor'], detimp['tasaocuota'], detimp['importe'])
-                                cur.execute("INSERT INTO T_Impuestos VALUES(?,?,?,?,?,?,?)", reg)'''
                                 # c.commit()
-                        if detallesubcompl['cantidad'] is not None:
-                            detallesubcompl['cantidad'] = float(detallesubcompl['cantidad'])
-                        if detallesubcompl['valorunitario'] is not None:
-                            detallesubcompl['valorunitario'] = float(detallesubcompl['valorunitario'])
-                        if detallesubcompl['importe'] is not None:
-                            detallesubcompl['importe'] = float(detallesubcompl['importe'])
-                        if detallesubcompl['fecha'] is not None:
-                            detallesubcompl['fecha'] = datetime.strptime(detallesubcompl['fecha'], '%Y-%m-%dT%H:%M:%S')
+                        detallesubcompl['cantidad'] = convtipo(detallesubcompl['cantidad'], 'float')
+                        detallesubcompl['valorunitario'] = convtipo(detallesubcompl['valorunitario'], 'float')
+                        detallesubcompl['importe'] = convtipo(detallesubcompl['importe'], 'float')
+                        detallesubcompl['fecha'] = convtipo(detallesubcompl['fecha'], 'date1')
                         reg = (detallesubcompl['id'], detallesubcompl['id_impuestos'], detallesubcompl['identificador'],
                                detallesubcompl['fecha'], detallesubcompl['rfc'], detallesubcompl['claveestacion'],
                                detallesubcompl['cantidad'], detallesubcompl['tipocombustible'],
@@ -837,12 +721,9 @@ def dbinsertcomplementos(c, data):
                         cur.execute("INSERT INTO Concepto_EstadoDeCuentaCombustible VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
                                     reg)
                         # c.commit()
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
-            if detallecompl['subtotal'] is not None:
-                detallecompl['subtotal'] = float(detallecompl['subtotal'])
-            if detallecompl['total'] is not None:
-                detallecompl['total'] = float(detallecompl['total'])
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
+            detallecompl['subtotal'] = convtipo(detallecompl['subtotal'], 'float')
+            detallecompl['total'] = convtipo(detallecompl['total'], 'float')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['tipooperacion'],
                    detallecompl['numerodecuenta'], detallecompl['subtotal'], detallecompl['total'])
             cur.execute("INSERT INTO EstadoDeCuentaCombustible VALUES(?,?,?,?,?,?,?)", reg)
@@ -875,27 +756,11 @@ def dbinsertcomplementos(c, data):
                                 trld = cptos[detail]
                                 for dis in trld:
                                     insertimp(c, trld[dis], detallesubcompl['id_impuestos'], 'DETERMINADO')
-                                ''' impuesto = ('id', 'tipo', 'base', 'impuesto', 'tipofactor', 'tasaocuota', 'importe')
-                                    detimp = dict.fromkeys(impuesto)
-                                    detimp.update(trld[dis])
-                                    detimp['tipo'] = 'DETERMINADO'
-                                    detimp['id'] = detallesubcompl['id_impuestos']
-                                if detimp['tasaocuota'] is not None:
-                                    detimp['tasaocuota'] = float(detimp['tasaocuota'])
-                                if detimp['importe'] is not None:
-                                    detimp['importe'] = float(detimp['importe'])
-                                reg = (detimp['id'], detimp['tipo'], detimp['base'], detimp['impuesto'],
-                                       detimp['tipofactor'], detimp['tasaocuota'], detimp['importe'])
-                                cur.execute("INSERT INTO T_Impuestos VALUES(?,?,?,?,?,?,?)", reg)'''
                                 # c.commit()
-                        if detallesubcompl['cantidad'] is not None:
-                            detallesubcompl['cantidad'] = float(detallesubcompl['cantidad'])
-                        if detallesubcompl['valorunitario'] is not None:
-                            detallesubcompl['valorunitario'] = float(detallesubcompl['valorunitario'])
-                        if detallesubcompl['importe'] is not None:
-                            detallesubcompl['importe'] = float(detallesubcompl['importe'])
-                        if detallesubcompl['fecha'] is not None:
-                            detallesubcompl['fecha'] = datetime.strptime(detallesubcompl['fecha'], '%Y-%m-%dT%H:%M:%S')
+                        detallesubcompl['cantidad'] = convtipo(detallesubcompl['cantidad'], 'float')
+                        detallesubcompl['valorunitario'] = convtipo(detallesubcompl['valorunitario'], 'float')
+                        detallesubcompl['importe'] = convtipo(detallesubcompl['importe'], 'float')
+                        detallesubcompl['fecha'] = convtipo(detallesubcompl['fecha'], 'date1')
                         reg = (detallesubcompl['id'], detallesubcompl['id_impuestos'], detallesubcompl['identificador'],
                                detallesubcompl['fecha'], detallesubcompl['rfc'], detallesubcompl['claveestacion'],
                                detallesubcompl['tipocombustible'], detallesubcompl['cantidad'],
@@ -903,12 +768,9 @@ def dbinsertcomplementos(c, data):
                                detallesubcompl['valorunitario'], detallesubcompl['importe'])
                         cur.execute("INSERT INTO Concepto_ConsumoDeCombustibles VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", reg)
                         # c.commit()
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
-            if detallecompl['subtotal'] is not None:
-                detallecompl['subtotal'] = float(detallecompl['subtotal'])
-            if detallecompl['total'] is not None:
-                detallecompl['total'] = float(detallecompl['total'])
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
+            detallecompl['subtotal'] = convtipo(detallecompl['subtotal'], 'float')
+            detallecompl['total'] = convtipo(detallecompl['total'], 'float')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['tipooperacion'],
                    detallecompl['numerodecuenta'], detallecompl['subtotal'], detallecompl['total'])
             cur.execute("INSERT INTO ConsumoDeCombustibles VALUES(?,?,?,?,?,?,?)", reg)
@@ -930,8 +792,7 @@ def dbinsertcomplementos(c, data):
                     detallesubcompl = dict.fromkeys(subcompl)
                     detallesubcompl.update(dtstr)
                     detallesubcompl['id'] = detallecompl['id']
-                    if detallesubcompl['año'] is not None:
-                        detallesubcompl['año'] = int(detallesubcompl['año'])
+                    detallesubcompl['año'] = convtipo(detallesubcompl['año'], 'int')
                     reg = (detallesubcompl['id'], detallesubcompl['marca'], detallesubcompl['tipooclase'],
                            detallesubcompl['año'], detallesubcompl['modelo'], detallesubcompl['niv'],
                            detallesubcompl['numserie'], detallesubcompl['numplacas'], detallesubcompl['nummotor'],
@@ -943,18 +804,8 @@ def dbinsertcomplementos(c, data):
                     detallecompl['cve_aduana'] = idcomp(c, 'T_Aduana', 'cve_Aduana', 7)
                     dtstr = data[con][dt]
                     inseradd(c, dtstr, detallecompl['cve_aduana'], 'aduana')
-                    '''subcompl = ('cve_aduana', 'numpedimp', 'fecha', 'aduana')
-                    detallesubcompl = dict.fromkeys(subcompl)
-                    detallesubcompl.update(dtstr)
-                    detallesubcompl['cve_aduana'] = detallecompl['cve_aduana']
-                    if detallesubcompl['fecha'] is not None:
-                        detallesubcompl['fecha'] = datetime.strptime(detallesubcompl['fecha'], '%Y-%m-%d')
-                    reg = (detallesubcompl['cve_aduana'], detallesubcompl['numpedimp'], detallesubcompl['fecha'],
-                           detallesubcompl['aduana'])
-                    cur.execute("INSERT INTO T_Aduana VALUES(?,?,?,?)", reg)'''
                     # c.commit()
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['serie'],
                    detallecompl['numfoldesveh'], detallecompl['cve_aduana'])
             cur.execute("INSERT INTO certificadodedestruccion VALUES(?,?,?,?,?,?)", reg)
@@ -996,22 +847,18 @@ def dbinsertcomplementos(c, data):
                         detallesubcompl.update(dtstr)
                         detallesubcompl['id'] = detallecompl['id']
                         detallesubcompl['tipo'] = "BENEFICIARIO"
-                        if detallesubcompl['iva'] is not None:
-                            detallesubcompl['iva'] = float(detallesubcompl['iva'])
-                        if detallesubcompl['montopago'] is not None:
-                            detallesubcompl['montopago'] = float(detallesubcompl['montopago'])
-                        reg = (detallesubcompl['id'], detallesubcompl['tipo'], detallesubcompl['bancoemisor'],
+                        detallesubcompl['iva'] = convtipo(detallesubcompl['iva'], 'float')
+                        detallesubcompl['montopago'] = convtipo(detallesubcompl['montopago'], 'float')
+                        reg = (detallesubcompl['id'], detallesubcompl['tipo'], detallesubcompl['bancoreceptor'],
                                detallesubcompl['nombre'], detallesubcompl['tipocuenta'], detallesubcompl['cuenta'],
                                detallesubcompl['rfc'], detallesubcompl['concepto'], detallesubcompl['iva'],
                                detallesubcompl['montopago'])
                         cur.execute("INSERT INTO DatosBancarios VALUES(?,?,?,?,?,?,?,?,?,?)", reg)
                         # c.commit()
-                if detallecompl['version'] is not None:
-                    detallecompl['version'] = float(detallecompl['version'])
-                if detallecompl['fechaoperacion'] is not None:
-                    detallecompl['fechaoperacion'] = datetime.strptime(detallecompl['fechaoperacion'], '%Y-%m-%d')
-                if detallecompl['hora'] is not None:
-                    detallecompl['hora'] = datetime.strptime(detallecompl['hora'], '%H:%M:%S.%f')
+                detallecompl['version'] = convtipo(detallecompl['version'], 'float')
+                detallecompl['fechaoperacion'] = convtipo(detallecompl['fechaoperacion'], 'date2')
+                detallecompl['version'] = convtipo(detallecompl['version'], 'float')
+                detallecompl['hora'] = convtipo(detallecompl['hora'], 'hora')
                 reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'],
                        detallecompl['fechaoperacion'], detallecompl['hora'], detallecompl['clavespei'],
                        detallecompl['sello'], detallecompl['numerocertificado'], detallecompl['cadenacda'])
@@ -1024,7 +871,7 @@ def dbinsertcomplementos(c, data):
             detallecompl['UUID'] = uuid
             detallecompl['id'] = idcomp(c, 'ImpuestosLocales')
             detallecompl['id_impuestos'] = idcomp(c, 'T_Impuestos', 'id', 10)
-            for dt in spter:
+            for dt in data[con]:
                 if dt in detallecompl:
                     detallecompl[dt] = data[con][dt]
                 elif not dt.find('retenciones') == -1:
@@ -1047,15 +894,12 @@ def dbinsertcomplementos(c, data):
                     detallesubcompl['tasaocuota'] = detallesubcompl.pop('tasadetraslado')
                     insertimp(c, detallesubcompl, detallecompl['id_impuestos'], 'TRASLADO')
                     # c.commit()
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
-            if detallecompl['totalderetenciones'] is not None:
-                detallecompl['totalderetenciones'] = float(detallecompl['totalderetenciones'])
-            if detallecompl['totaldetraslados'] is not None:
-                detallecompl['totaldetraslados'] = float(detallecompl['totaldetraslados'])
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
+            detallecompl['totalderetenciones'] = convtipo(detallecompl['totalderetenciones'], 'float')
+            detallecompl['totaldetraslados'] = convtipo(detallecompl['totaldetraslados'], 'float')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'],
                    detallecompl['totalderetenciones'], detallecompl['totaldetraslados'], detallecompl['id_impuestos'])
-            cur.execute("INSERT INTO Complemento_SPEI VALUES(?,?,?,?,?,?,?,?,?)", reg)
+            cur.execute("INSERT INTO ImpuestosLocales VALUES(?,?,?,?,?,?)", reg)
             # c.commit()
         elif con == 'renovacionysustitucionvehiculos':
             # version | tipodedecreto
@@ -1095,11 +939,8 @@ def dbinsertcomplementos(c, data):
                                    detallesubsubcompl['numfolavisoint'], detallesubsubcompl['numpedim'],
                                    detallesubsubcompl['aduana'], detallesubsubcompl['fecharegulveh'],
                                    detallesubsubcompl['foliofiscal'])
-                            if detallesubsubcompl['año'] is not None:
-                                detallesubsubcompl['año'] = int(detallesubsubcompl['año'])
-                            if detallesubsubcompl['fecharegulveh'] is not None:
-                                detallesubsubcompl['fecharegulveh'] = datetime.strptime(data['fecharegulveh'],
-                                                                                        '%Y-%m-%d')
+                            detallesubsubcompl['año'] = convtipo(detallesubsubcompl['año'], 'int')
+                            detallesubsubcompl['fecharegulveh'] = convtipo(detallesubsubcompl['fecharegulveh'], 'date2')
                             cur.execute("INSERT INTO VehiculosUsadosEnajenadoPermAlFab " +
                                         "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", reg)
                             # c.commit()
@@ -1110,22 +951,21 @@ def dbinsertcomplementos(c, data):
                             detallesubsubcompl = dict.fromkeys(subsubcompl)
                             detallesubsubcompl.update(dtsub)
                             detallesubsubcompl['id'] = detallesubcompl['id']
-                            if detallesubsubcompl['año'] is not None:
-                                detallesubsubcompl['año'] = int(detallesubsubcompl['año'])
+                            detallesubsubcompl['año'] = convtipo(detallesubsubcompl['año'], 'int')
                             reg = (detallesubsubcompl['id'], detallesubsubcompl['año'],
                                    detallesubsubcompl['modelo'], detallesubsubcompl['numplacas'],
                                    detallesubsubcompl['rfc'])
                             cur.execute("INSERT INTO VehiculoNuvoSemEnajenadoFabAlPerm " +
                                         "VALUES(?,?,?,?,?)", reg)
                             # c.commit()
-                    reg = (detallesubcompl['id_srv'], detallesubcompl['id'],
+                    reg = (detallesubcompl['id_rsv'], detallesubcompl['id'],
                            detallesubcompl['tipo'], detallesubcompl['vehenaj'])
                     cur.execute("INSERT INTO DecretoRenovSustitVehicular VALUES(?,?,?,?)", reg)
                     # c.commit()
                 elif not dt.find('decretosustitvehicular') == -1:
                     # vehenaj
                     dtstr = data[con][dt]
-                    subcompl = ('id_srv', 'id', 'tipo', 'vehenaj')
+                    subcompl = ('id_rsv', 'id', 'tipo', 'vehenaj')
                     detallesubcompl = dict.fromkeys(subcompl)
                     detallesubcompl['id_rsv'] = detallecompl['id']
                     detallesubcompl['id'] = idcomp(c, 'DecretoRenovSustitVehicular')
@@ -1152,11 +992,8 @@ def dbinsertcomplementos(c, data):
                                    detallesubsubcompl['numfolavisoint'], detallesubsubcompl['numpedim'],
                                    detallesubsubcompl['aduana'], detallesubsubcompl['fecharegulveh'],
                                    detallesubsubcompl['foliofiscal'])
-                            if detallesubsubcompl['año'] is not None:
-                                detallesubsubcompl['año'] = int(detallesubsubcompl['año'])
-                            if detallesubsubcompl['fecharegulveh'] is not None:
-                                detallesubsubcompl['fecharegulveh'] = datetime.strptime(data['fecharegulveh'],
-                                                                                        '%Y-%m-%d')
+                            detallesubsubcompl['año'] = convtipo(detallesubsubcompl['año'], 'int')
+                            detallesubsubcompl['fecharegulveh'] = convtipo(detallesubsubcompl['fecharegulveh'], 'date2')
                             cur.execute("INSERT INTO VehiculosUsadosEnajenadoPermAlFab " +
                                         "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", reg)
                             # c.commit()
@@ -1170,17 +1007,15 @@ def dbinsertcomplementos(c, data):
                             reg = (detallesubsubcompl['id'], detallesubsubcompl['año'],
                                    detallesubsubcompl['modelo'], detallesubsubcompl['numplacas'],
                                    detallesubsubcompl['rfc'])
-                            if detallesubsubcompl['año'] is not None:
-                                detallesubsubcompl['año'] = int(detallesubsubcompl['año'])
+                            detallesubsubcompl['año'] = convtipo(detallesubsubcompl['año'], 'int')
                             cur.execute("INSERT INTO VehiculoNuvoSemEnajenadoFabAlPerm " +
                                         "VALUES(?,?,?,?,?)", reg)
                             # c.commit()
-                    reg = (detallesubcompl['id_srv'], detallesubcompl['id'],
+                    reg = (detallesubcompl['id_rsv'], detallesubcompl['id'],
                            detallesubcompl['tipo'], detallesubcompl['vehenaj'])
                     cur.execute("INSERT INTO DecretoRenovSustitVehicular VALUES(?,?,?,?)", reg)
                     # c.commit()
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['tipodedecreto'])
             cur.execute("INSERT INTO renovacionysustitucionvehiculos VALUES(?,?,?,?)", reg)
             # c.commit()
@@ -1217,15 +1052,10 @@ def dbinsertcomplementos(c, data):
                     detallesubcompl = dict.fromkeys(subcompl)
                     detallesubcompl.update(operacion)
                     detallesubcompl['id'] = detallecompl['id']
-                    if detallesubcompl['fechainstnotarial'] is not None:
-                        detallesubcompl['fechainstnotarial'] = datetime.strptime(detallesubcompl['fechainstnotarial'],
-                                                                                 '%Y-%m-%d')
-                    if detallesubcompl['montooperacion'] is not None:
-                        detallesubcompl['montooperacion'] = float(detallesubcompl['montooperacion'])
-                    if detallesubcompl['subtotal'] is not None:
-                        detallesubcompl['subtotal'] = float(detallesubcompl['subtotal'])
-                    if detallesubcompl['iva'] is not None:
-                        detallesubcompl['iva'] = float(detallesubcompl['iva'])
+                    detallesubcompl['fechainstnotarial'] = convtipo(detallesubcompl['fechainstnotarial'], 'date2')
+                    detallesubcompl['montooperacion'] = convtipo(detallesubcompl['montooperacion'], 'float')
+                    detallesubcompl['subtotal'] = convtipo(detallesubcompl['subtotal'], 'float')
+                    detallesubcompl['iva'] = convtipo(detallesubcompl['iva'], 'float')
                     reg = (detallesubcompl['id'], detallesubcompl['numinstrumentonotarial'],
                            detallesubcompl['fechainstnotarial'], detallesubcompl['montooperacion'],
                            detallesubcompl['subtotal'], detallesubcompl['iva'])
@@ -1239,7 +1069,7 @@ def dbinsertcomplementos(c, data):
                     detallesubcompl.update(notario)
                     reg = (detallesubcompl['id'], detallesubcompl['curp'], detallesubcompl['numnotaria'],
                            detallesubcompl['entidadfederativa'], detallesubcompl['adscripcion'])
-                    cur.execute("INSERT INTO DatosOperacion VALUES(?,?,?,?,?)", reg)
+                    cur.execute("INSERT INTO DatosNotario VALUES(?,?,?,?,?)", reg)
                     # c.commit()
                 elif not dt.find('datosenajenante') == -1 or not dt.find('datosadquiriente') == -1:
                     datos = data[con][dt]
@@ -1258,8 +1088,7 @@ def dbinsertcomplementos(c, data):
                         if not dt.find('datosun') == -1:
                             enadq = datos[dt_]
                             detallesubcompl.update(enadq)
-                            if detallesubcompl['porcentaje'] is not None:
-                                detallesubcompl['porcentaje'] = float(detallesubcompl['porcentaje'])
+                            detallesubcompl['porcentaje'] = convtipo(detallesubcompl['porcentaje'], 'float')
                             reg = (detallesubcompl['id'], detallesubcompl['tipo'], detallesubcompl['coprosocconyugale'],
                                    detallesubcompl['nombre'], detallesubcompl['apellidopaterno'],
                                    detallesubcompl['apellidomaterno'], detallesubcompl['rfc'], detallesubcompl['curp'],
@@ -1277,17 +1106,437 @@ def dbinsertcomplementos(c, data):
                                 else:
                                     i += 1
                                 detallesubcompl.update(enadq[soc])
-                                if detallesubcompl['porcentaje'] is not None:
-                                    detallesubcompl['porcentaje'] = float(detallesubcompl['porcentaje'])
+                                detallesubcompl['porcentaje'] = convtipo(detallesubcompl['porcentaje'], 'float')
                                 reg = (detallesubcompl['id'], detallesubcompl['tipo'],
                                        detallesubcompl['coprosocconyugale'], detallesubcompl['nombre'],
                                        detallesubcompl['apellidopaterno'], detallesubcompl['apellidomaterno'],
                                        detallesubcompl['rfc'], detallesubcompl['curp'], detallesubcompl['porcentaje'])
                                 cur.execute("INSERT INTO DatosEnajenanteAdquiriente VALUES(?,?,?,?,?,?,?,?,?)", reg)
                                 # c.commit()
-            if detallecompl['version'] is not None:
-                detallecompl['version'] = float(detallecompl['version'])
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
             reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'])
             cur.execute("INSERT INTO NotariosPublicos VALUES(?,?,?)", reg)
             # c.commit()
+        elif con == 'comercioexterior':
+            # version | motivotraslado | tipooperacion | clavedepedimento | certificadodeorigen |
+            # numeroexportadorconfiable | incoterm | subdivision | observaciones | tipocambiousd | totalusd
+            compl = ('UUID', 'id', 'version', 'motivotraslado', 'tipooperacion', 'clavedepedimento',
+                     'certificadodeorigen', 'numeroexportadorconfiable', 'incoterm', 'subdivision', 'observaciones',
+                     'tipocambiousd', 'totalusd')
+            detallecompl = dict.fromkeys(compl)
+            detallecompl['UUID'] = uuid
+            detallecompl['id'] = idcomp(c, 'ComercioExterior')
+            for dt in data[con]:
+                if dt in detallecompl:
+                    detallecompl[dt] = data[con][dt]
+                elif not dt.find('emisor') == -1:
+                    # curp
+                    dtstr = data[con][dt]
+                    subcompl = ('id', 'curp', 'id_domicilio')
+                    detallesubcompl = dict.fromkeys(subcompl)
+                    detallesubcompl['id'] = detallecompl['id']
+                    if 'curp' in dtstr:
+                        detallesubcompl['curp'] = dtstr['curp']
+                    for dt_ in dtstr:
+                        if not dt_.find('domicilio') == -1:
+                            if detallesubcompl['id_domicilio'] is None:
+                                detallesubcompl['id_domicilio'] = idcomp(c, 'Domicilio_CE')
+                            insertadomce(c, dtstr[dt_], detallesubcompl['id_domicilio'])
+                    reg = (detallesubcompl['id'], detallesubcompl['curp'], detallesubcompl['id_domicilio'])
+                    cur.execute("INSERT INTO Emisor_CE VALUES(?,?,?)", reg)
+                elif not dt.find('propietario') == -1:
+                    # numregidtrib | residenciafiscal
+                    dtstr = data[con][dt]
+                    subcompl = ('id', 'numregidtrib', 'residenciafiscal')
+                    detallesubcompl = dict.fromkeys(subcompl)
+                    detallesubcompl['id'] = detallecompl['id']
+                    detallesubcompl.update(dtstr)
+                    reg = (detallesubcompl['id'], detallesubcompl['numregidtrib'], detallesubcompl['residenciafiscal'])
+                    cur.execute("INSERT INTO Propietario_CE VALUES(?,?,?)", reg)
+                elif not dt.find('receptor') == -1:
+                    # numregidtrib
+                    dtstr = data[con][dt]
+                    subcompl = ('id', 'numregidtrib', 'id_domicilio')
+                    detallesubcompl = dict.fromkeys(subcompl)
+                    detallesubcompl['id'] = detallecompl['id']
+                    if 'numregidtrib' in dtstr:
+                        detallesubcompl['numregidtrib'] = dtstr['numregidtrib']
+                    for dt_ in dtstr:
+                        if not dt_.find('domicilio') == -1:
+                            if detallesubcompl['id_domicilio'] is None:
+                                detallesubcompl['id_domicilio'] = idcomp(c, 'Domicilio_CE')
+                            insertadomce(c, dtstr[dt_], detallesubcompl['id_domicilio'])
+                    reg = (detallesubcompl['id'], detallesubcompl['numregidtrib'], detallesubcompl['id_domicilio'])
+                    cur.execute("INSERT INTO Receptor_CE VALUES(?,?,?)", reg)
+                elif not dt.find('destinatario') == -1:
+                    # numregidtrib | Nombre
+                    dtstr = data[con][dt]
+                    subcompl = ('id', 'numregidtrib', 'Nombre', 'id_domicilio')
+                    detallesubcompl = dict.fromkeys(subcompl)
+                    detallesubcompl['id'] = detallecompl['id']
+                    for dt_ in dtstr:
+                        if dt_ in detallesubcompl:
+                            detallesubcompl[dt_] = dtstr[dt_]
+                        elif not dt_.find('domicilio') == -1:
+                            if detallesubcompl['id_domicilio'] is None:
+                                detallesubcompl['id_domicilio'] = idcomp(c, 'Domicilio_CE')
+                            insertadomce(c, dtstr[dt_], detallesubcompl['id_domicilio'])
+                    reg = (detallesubcompl['id'], detallesubcompl['numregidtrib'], detallesubcompl['Nombre'],
+                           detallesubcompl['id_domicilio'])
+                    cur.execute("INSERT INTO Destinatario_CE VALUES(?,?,?,?)", reg)
+                elif not dt.find('mercancias') == -1:
+                    # noidentificacion | fraccionarancelaria | cantidadaduana | unidadaduana | valorunitarioaduana |
+                    # valordolares
+                    dtstr = data[con][dt]
+                    subcompl = ('id', 'noidentificacion', 'fraccionarancelaria', 'cantidadaduana', 'unidadaduana',
+                                'valorunitarioaduana', 'valordolares', 'id_descripcionesespecificas')
+                    for dt_ in dtstr:
+                        detallesubcompl = dict.fromkeys(subcompl)
+                        detallesubcompl['id'] = detallecompl['id']
+                        merc = dtstr[dt_]
+                        for _dt in merc:
+                            if _dt in detallesubcompl:
+                                detallesubcompl[_dt] = merc[_dt]
+                            elif not _dt.find('descripciones') == -1:
+                                # marca | modelo | submodelo | numeroserie
+                                idds = 'id_descripcionesespecificas'
+                                if detallesubcompl[idds] is None:
+                                    detallesubcompl[idds] = idcomp(c, 'Mercancias_CE', idds)
+                                descesp = merc[_dt]
+                                descespkeys = ('id', 'marca', 'modelo', 'submodelo', 'numeroserie')
+                                dtdescesp = dict.fromkeys(descespkeys)
+                                dtdescesp.update(descesp)
+                                dtdescesp['id'] = detallesubcompl[idds]
+                                reg = (dtdescesp['id'], dtdescesp['marca'], dtdescesp['modelo'], dtdescesp['submodelo'],
+                                       dtdescesp['numeroserie'])
+                                cur.execute("INSERT INTO DescripcionesEspecificas_CE VALUES(?,?,?,?,?)", reg)
+                        detallesubcompl['cantidadaduana'] = convtipo(detallesubcompl['cantidadaduana'], 'float')
+                        detallesubcompl['valorunitarioaduana'] = convtipo(detallesubcompl['valorunitarioaduana'],
+                                                                          'float')
+                        detallesubcompl['valordolares'] = convtipo(detallesubcompl['valordolares'], 'float')
+                        reg = (detallesubcompl['id'], detallesubcompl['noidentificacion'],
+                               detallesubcompl['fraccionarancelaria'], detallesubcompl['cantidadaduana'],
+                               detallesubcompl['unidadaduana'], detallesubcompl['valorunitarioaduana'],
+                               detallesubcompl['valordolares'], detallesubcompl['id_descripcionesespecificas'])
+                        cur.execute("INSERT INTO Mercancias_CE VALUES(?,?,?,?,?,?,?,?)", reg)
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
+            detallecompl['tipocambiousd'] = convtipo(detallecompl['tipocambiousd'], 'float')
+            detallecompl['totalusd'] = convtipo(detallecompl['totalusd'], 'float')
+            reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['motivotraslado'],
+                   detallecompl['tipooperacion'], detallecompl['clavedepedimento'], detallecompl['certificadodeorigen'],
+                   detallecompl['numeroexportadorconfiable'], detallecompl['incoterm'], detallecompl['subdivision'],
+                   detallecompl['observaciones'], detallecompl['tipocambiousd'], detallecompl['totalusd'])
+            cur.execute("INSERT INTO ComercioExterior VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)", reg)
+        elif con == 'pagos':
+            # version | | fechapago | formadepagop | monedap | tipocambiop | monto | numoperacion | rfcemisorctaord |
+            # nombancoordext | ctaordenante | rfcemisorctaben | ctabeneficiario | tipocadpago | certpago | cadpago
+            # sellopago
+            compl = ('UUID', 'id', 'version', 'fechapago', 'formadepagop', 'monedap', 'tipocambiop', 'monto',
+                     'numoperacion', 'rfcemisorctaord', 'nombancoordext', 'ctaordenante', 'rfcemisorctaben',
+                     'ctabeneficiario', 'tipocadpago', 'certpago', 'cadpago', 'sellopago', 'id_impuestos')
+            v = data[con]['version']
+            for dt in data[con]:
+                if not dt.find('pago') == -1:
+                    pago = data[con][dt]
+                    detallecompl = dict.fromkeys(compl)
+                    detallecompl['UUID'] = uuid
+                    detallecompl['id'] = idcomp(c, 'Pagos', 'id', 7)
+                    detallecompl['version'] = v
+                    for _dt in pago:
+                        if _dt in detallecompl:
+                            detallecompl[_dt] = pago[_dt]
+                        elif not _dt.find('doctorelacionado') == -1:
+                            # iddocumento | serie | folio | monedadr | tipocambiodr | metododepagodr | metododepagodr |
+                            # numparcialidad | impsaldoant | imppagado | impsaldoinsoluto
+                            dcrl = ('id', 'iddocumento', 'serie', 'folio', 'monedadr', 'tipocambiodr', 'metododepagodr',
+                                    'numparcialidad', 'impsaldoant', 'imppagado', 'impsaldoinsoluto')
+                            dctorel = pago[_dt]
+                            detalledctorel = dict.fromkeys(dcrl)
+                            detalledctorel.update(dctorel)
+                            detalledctorel['id'] = detallecompl['id']
+                            detalledctorel['tipocambiodr'] = convtipo(detalledctorel['tipocambiodr'], 'float')
+                            detalledctorel['impsaldoant'] = convtipo(detalledctorel['impsaldoant'], 'float')
+                            detalledctorel['imppagado'] = convtipo(detalledctorel['imppagado'], 'float')
+                            detalledctorel['impsaldoinsoluto'] = convtipo(detalledctorel['impsaldoinsoluto'], 'float')
+                            reg = (detalledctorel['id'], detalledctorel['iddocumento'], detalledctorel['serie'],
+                                   detalledctorel['folio'], detalledctorel['monedadr'], detalledctorel['tipocambiodr'],
+                                   detalledctorel['metododepagodr'], detalledctorel['numparcialidad'],
+                                   detalledctorel['impsaldoant'], detalledctorel['imppagado'],
+                                   detalledctorel['impsaldoinsoluto'])
+                            cur.execute("INSERT INTO DoctoRelacionado_Pagos VALUES(?,?,?,?,?,?,?,?,?,?,?)", reg)
+                        elif not _dt.find('impuestos') == -1:
+                            if detallecompl['id_impuestos'] is None:
+                                detallecompl['id_impuestos'] = idcomp(c, 'Impuestos', 'UUID', 10)
+                            imps = pago[_dt]
+                            imps['UUID'] = detallecompl['id_impuestos']
+                            for k in imps:
+                                if not k.find('retenciones') == -1:
+                                    imps['retenciones'] = imps.pop(k)
+                            for k in imps:
+                                if not k.find('traslados') == -1:
+                                    imps['traslados'] = imps.pop(k)
+                            dbinsertimpuestos(c, imps)
+                    detallecompl['version'] = convtipo(detallecompl['version'], 'float')
+                    detallecompl['fechapago'] = convtipo(detallecompl['fechapago'], 'date1')
+                    detallecompl['tipocambiop'] = convtipo(detallecompl['tipocambiop'], 'float')
+                    detallecompl['monto'] = convtipo(detallecompl['monto'], 'float')
+                    reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['fechapago'],
+                           detallecompl['formadepagop'], detallecompl['monedap'], detallecompl['tipocambiop'],
+                           detallecompl['monto'], detallecompl['numoperacion'], detallecompl['rfcemisorctaord'],
+                           detallecompl['nombancoordext'], detallecompl['ctaordenante'],
+                           detallecompl['rfcemisorctaben'], detallecompl['ctabeneficiario'],
+                           detallecompl['tipocadpago'], detallecompl['certpago'], detallecompl['cadpago'],
+                           detallecompl['sellopago'], detallecompl['id_impuestos'])
+                    cur.execute("INSERT INTO Pagos VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", reg)
+        elif con == 'nomina':
+            # version | tiponomina | fechapago | fechainicialpago | fechafinalpago | numdiaspagados | totalpercepciones
+            # totaldeducciones | totalotrospagos
+            compl = ('UUID', 'id', 'version', 'tiponomina', 'fechapago', 'fechainicialpago', 'fechafinalpago',
+                     'numdiaspagados', 'totalpercepciones', 'totaldeducciones', 'totalotrospagos')
+            nomdata = data[con]
+            detallecompl = dict.fromkeys(compl)
+            detallecompl['UUID'] = uuid
+            detallecompl['id'] = idcomp(c, 'Nomina', 'id', 10)
+            for dt in nomdata:
+                if dt in detallecompl:
+                    detallecompl[dt] = nomdata[dt]
+                else:
+                    if not dt.find('emisor') == -1:
+                        # curp | registropatronal | rfcpatronorigen
+                        emi = nomdata[dt]
+                        e = ('id_nomina', 'id', 'curp', 'registropatronal', 'rfcpatronorigen')
+                        emisor = dict.fromkeys(e)
+                        emisor['id_nomina'] = detallecompl['id']
+                        emisor['id'] = idcomp(c, 'Emisor_Nomina', 'id', 5)
+                        for dt_ in emi:
+                            if dt_ in emisor:
+                                emisor[dt_] = emi[dt_]
+                            else:
+                                if not dt_.find('entidadsncf') == -1:
+                                    # origenrecurso | montorecursopropio
+                                    esncf = ('id', 'origenrecurso', 'montorecursopropio')
+                                    entidad = dict.fromkeys(esncf)
+                                    entidad.update(emi[dt_])
+                                    entidad['id'] = emisor['id']
+                                    entidad['montorecursopropio'] = convtipo(entidad['montorecursopropio'], 'float')
+                                    reg = (entidad['id'], entidad['origenrecurso'], entidad['montorecursopropio'])
+                                    cur.execute("INSERT INTO EntidadSNCF VALUES(?,?,?)", reg)
+                        reg = (emisor['id_nomina'], emisor['id'], emisor['curp'], emisor['registropatronal'],
+                               emisor['rfcpatronorigen'])
+                        cur.execute("INSERT INTO Emisor_Nomina VALUES(?,?,?,?,?)", reg)
+                    elif not dt.find('receptor') == -1:
+                        # curp | numseguridadsocial | fechainiciorellaboral | antigüedad | tipocontrato | sindicalizado
+                        # tipojornada | tiporegimen | numempleado | departamento | puesto | riesgopuesto |
+                        # periodicidadpago | banco | cuentabancaria | salariobasecotapor | salariodiariointegrado |
+                        # claveentfed
+                        rec = nomdata[dt]
+                        r = ('id_nomina', 'id', 'curp', 'numseguridadsocial', 'fechainiciorellaboral', 'antigüedad',
+                             'tipocontrato', 'sindicalizado', 'tipojornada', 'tiporegimen', 'numempleado',
+                             'departamento', 'puesto', 'riesgopuesto', 'periodicidadpago', 'banco', 'cuentabancaria',
+                             'salariobasecotapor', 'salariodiariointegrado', 'claveentfed')
+                        receptor = dict.fromkeys(r)
+                        receptor['id_nomina'] = detallecompl['id']
+                        receptor['id'] = idcomp(c, 'Receptor_Nomina', 'id', 5)
+                        for dt_ in rec:
+                            if dt_ in receptor:
+                                receptor[dt_] = rec[dt_]
+                            else:
+                                if not dt_.find('subcontratacion') == -1:
+                                    # rfclabora | porcentajetiempo
+                                    sc = ('id', 'rfclabora', 'porcentajetiempo')
+                                    subc = dict.fromkeys(sc)
+                                    subc.update(rec[dt_])
+                                    subc['id'] = receptor['id']
+                                    subc['porcentajetiempo'] = convtipo(subc['porcentajetiempo'], 'float')
+                                    reg = (subc['id'], subc['rfclabora'], subc['porcentajetiempo'])
+                                    cur.execute("INSERT INTO SubContratacion VALUES(?,?,?)", reg)
+                        reg = (receptor['id_nomina'], receptor['id'], receptor['curp'], receptor['numseguridadsocial'],
+                               receptor['fechainiciorellaboral'], receptor['antigüedad'], receptor['tipocontrato'],
+                               receptor['sindicalizado'], receptor['tipojornada'], receptor['tiporegimen'],
+                               receptor['numempleado'], receptor['departamento'], receptor['puesto'],
+                               receptor['riesgopuesto'], receptor['periodicidadpago'], receptor['banco'],
+                               receptor['cuentabancaria'], receptor['salariobasecotapor'],
+                               receptor['salariodiariointegrado'], receptor['claveentfed'])
+                        cur.execute("INSERT INTO Receptor_Nomina VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", reg)
+                    elif not dt.find('percepciones') == -1:
+                        # totalsueldos | totalseparacionindemnizacion | totaljubilacionpensionretiro | totalgravado
+                        # totalexento
+                        perc = nomdata[dt]
+                        p = ('id_nomina', 'id', 'totalsueldos', 'totalseparacionindemnizacion',
+                             'totaljubilacionpensionretiro', 'totalgravado', 'totalexento')
+                        percepciones = dict.fromkeys(p)
+                        percepciones['id_nomina'] = detallecompl['id']
+                        percepciones['id'] = idcomp(c, 'Percepciones', 'id', 5)
+                        for dt_ in perc:
+                            if dt_ in percepciones:
+                                percepciones[dt_] = perc[dt_]
+                            else:
+                                if not dt_.find('percepcion') == -1:
+                                    # tipopercepcion  | clave | concepto | importegravado | importeexento
+                                    detperc = perc[dt_]
+                                    pdt = ('id_percepciones', 'id', 'tipopercepcion', 'clave', 'concepto',
+                                           'importegravado', 'importeexento')
+                                    percepcion = dict.fromkeys(pdt)
+                                    percepcion['id_percepciones'] = percepciones['id']
+                                    percepcion['id'] = idcomp(c, 'Percepcion', 'id', 5)
+                                    for dt__ in detperc:
+                                        if dt__ in percepcion:
+                                            percepcion[dt__] = detperc[dt__]
+                                        else:
+                                            if not dt__.find('accionesotitulos') == -1:
+                                                # valormercado | precioalotorgarse
+                                                aot = ('id_percepcion', 'valormercado', 'precioalotorgarse')
+                                                aotdt = dict.fromkeys(aot)
+                                                aotdt.update(detperc[dt__])
+                                                aotdt['id_percepcion'] = percepcion['id']
+                                                aotdt['valormercado'] = convtipo(aotdt['valormercado'], 'float')
+                                                aotdt['precioalotorgarse'] = convtipo(aotdt['precioalotorgarse'],
+                                                                                      'float')
+                                                reg = (aotdt['id_percepcion'], aotdt['valormercado'],
+                                                       aotdt['precioalotorgarse'])
+                                                cur.execute("INSERT INTO AccionesOTitulos VALUES(?,?,?)", reg)
+                                            elif not dt__.find('horasextra') == -1:
+                                                # dias | tipohoras | horasextra | importepagado
+                                                he = ('id_percepcion', 'dias', 'tipohoras', 'horasextra',
+                                                      'importepagado')
+                                                hedt = dict.fromkeys(he)
+                                                hedt.update(detperc[dt__])
+                                                hedt['id_percepcion'] = percepcion['id']
+                                                hedt['dias'] = convtipo(hedt['dias'], 'int')
+                                                hedt['horasextra'] = convtipo(hedt['horasextra'], 'float')
+                                                hedt['importepagado'] = convtipo(hedt['importepagado'], 'float')
+                                                reg = (hedt['id_percepcion'], hedt['dias'], hedt['tipohoras'],
+                                                       hedt['horasextra'], hedt['importepagado'])
+                                                cur.execute("INSERT INTO HorasExtra VALUES(?,?,?,?,?)", reg)
+                                    reg = (percepcion['id_percepciones'], percepcion['id'],
+                                           percepcion['tipopercepcion'], percepcion['clave'], percepcion['concepto'],
+                                           percepcion['importegravado'], percepcion['importeexento'])
+                                    cur.execute("INSERT INTO Percepcion VALUES(?,?,?,?,?,?,?)", reg)
+                                elif not dt_.find('jubilacionpensionretiro') == -1:
+                                    # totalunaexhibicion | totalparcialidad | montodiario | ingresoacumulable |
+                                    # ingresonoacumulable
+                                    juboret = perc[dt_]
+                                    jor = ('id_percepciones', 'id', 'totalunaexhibicion', 'totalparcialidad',
+                                           'montodiario', 'ingresoacumulable', 'ingresonoacumulable')
+                                    jubiret = dict.fromkeys(jor)
+                                    jubiret['id_percepciones'] = percepciones['id']
+                                    jubiret['id'] = idcomp(c, 'JubilacionPensionRetiro', 'id', 5)
+                                    jubiret.update(juboret)
+                                    jubiret['totalunaexhibicion'] = convtipo(jubiret['totalunaexhibicion'], 'float')
+                                    jubiret['totalparcialidad'] = convtipo(jubiret['totalparcialidad'], 'float')
+                                    jubiret['montodiario'] = convtipo(jubiret['montodiario'], 'float')
+                                    jubiret['ingresoacumulable'] = convtipo(jubiret['ingresoacumulable'], 'float')
+                                    jubiret['ingresonoacumulable'] = convtipo(jubiret['ingresonoacumulable'], 'float')
+                                    reg = (jubiret['id_percepciones'], jubiret['id'], jubiret['totalunaexhibicion'],
+                                           jubiret['totalparcialidad'], jubiret['montodiario'],
+                                           jubiret['ingresoacumulable'], jubiret['ingresonoacumulable'])
+                                    cur.execute("INSERT INTO JubilacionPensionRetiro VALUES(?,?,?,?,?,?,?)", reg)
+                                elif not dt_.find('separacionindemnizacion') == -1:
+                                    # totalpagado | numañosservicio | ultimosueldomensord | ingresoacumulable |
+                                    # ingresonoacumulable
+                                    sepind = perc[dt_]
+                                    spd = ('id_percepciones', 'id', 'totalpagado', 'numañosservicio',
+                                           'ultimosueldomensord', 'ingresoacumulable', 'ingresonoacumulable')
+                                    sep_ind = dict.fromkeys(spd)
+                                    sep_ind['id_percepciones'] = percepciones['id']
+                                    sep_ind['id'] = idcomp(c, 'SeparacionIndemnizacion', 'id', 5)
+                                    sep_ind.update(sepind)
+                                    sep_ind['totalpagado'] = convtipo(sep_ind['totalpagado'], 'float')
+                                    sep_ind['numañosservicio'] = convtipo(sep_ind['numañosservicio'], 'int')
+                                    sep_ind['ultimosueldomensord'] = convtipo(sep_ind['ultimosueldomensord'], 'float')
+                                    sep_ind['ingresoacumulable'] = convtipo(sep_ind['ingresoacumulable'], 'float')
+                                    sep_ind['ingresonoacumulable'] = convtipo(sep_ind['ingresonoacumulable'], 'float')
+                                    reg = (sep_ind['id_percepciones'], sep_ind['id'], sep_ind['totalpagado'],
+                                           sep_ind['numañosservicio'], sep_ind['ultimosueldomensord'],
+                                           sep_ind['ingresoacumulable'], sep_ind['ingresonoacumulable'])
+                                    cur.execute("INSERT INTO SeparacionIndemnizacion VALUES(?,?,?,?,?,?,?)", reg)
+                        reg = (percepciones['id_nomina'], percepciones['id'], percepciones['totalsueldos'],
+                               percepciones['totalseparacionindemnizacion'],
+                               percepciones['totaljubilacionpensionretiro'], percepciones['totalgravado'],
+                               percepciones['totalexento'])
+                        cur.execute("INSERT INTO Percepciones VALUES(?,?,?,?,?,?,?)", reg)
+                    elif not dt.find('deducciones') == -1:
+                        # totalotrasdeducciones | totalimpuestosretenidos
+                        ded = nomdata[dt]
+                        d = ('id_nomina', 'id', 'totalotrasdeducciones', 'totalimpuestosretenidos')
+                        deducciones = dict.fromkeys(d)
+                        deducciones['id_nomina'] = detallecompl['id']
+                        deducciones['id'] = idcomp(c, 'Deducciones', 'id', 5)
+                        for dt_ in ded:
+                            if dt_ in deducciones:
+                                deducciones[dt_] = ded[dt_]
+                            else:
+                                if not dt_.find('deduccion') == -1:
+                                    # tipodeduccion | clave | concepto | importe
+                                    detded = ded[dt_]
+                                    deddt = ('id_deducciones', 'tipodeduccion', 'clave', 'concepto', 'importe')
+                                    deduccion = dict.fromkeys(deddt)
+                                    deduccion['id_deducciones'] = deducciones['id']
+                                    deduccion.update(detded)
+                                    deduccion['importe'] = convtipo(deduccion['importe'], 'float')
+                                    reg = (deduccion['id_deducciones'], deduccion['tipodeduccion'], deduccion['clave'],
+                                           deduccion['concepto'], deduccion['importe'])
+                                    cur.execute("INSERT INTO Deduccion VALUES(?,?,?,?,?)", reg)
+                        reg = (deducciones['id_nomina'], deducciones['id'], deducciones['totalotrasdeducciones'],
+                               deducciones['totalimpuestosretenidos'])
+                        cur.execute("INSERT INTO Deducciones VALUES(?,?,?,?)", reg)
+                    elif not dt.find('otrospagos') == -1:
+                        otpa = nomdata[dt]
+                        op = ('id_nomina', 'id', 'tipootropago', 'clave', 'concepto', 'importe')
+                        for dt_ in otpa:
+                            if not dt_.find('otropago') == -1:
+                                # tipootropago | clave | concepto | importe
+                                dtotpa = otpa[dt_]
+                                otropago = dict.fromkeys(op)
+                                otropago['id_nomina'] = detallecompl['id']
+                                otropago['id'] = idcomp(c, 'OtrosPagos', 'id', 5)
+                                for dt__ in dtotpa:
+                                    if dt__ in otropago:
+                                        otropago[dt__] = dtotpa[dt__]
+                                    else:
+                                        if not dt__.find('subsidioalempleo') == -1:
+                                            # subsidiocausado
+                                            sub = ('id_otrospagos', 'subsidiocausado')
+                                            subsidio = dict.fromkeys(sub)
+                                            subsidio.update(dtotpa[dt__])
+                                            subsidio['id_otrospagos'] = otropago['id']
+                                            subsidio['subsidiocausado'] = convtipo(subsidio['subsidiocausado'], 'float')
+                                            reg = (subsidio['id_otrospagos'], subsidio['subsidiocausado'])
+                                            cur.execute("INSERT INTO SubsidioAlEmpleo VALUES(?,?)", reg)
+                                        elif not dt__.find('compensacionsaldosafavor') == -1:
+                                            # saldoafavor | año | remanentesalfav
+                                            csf = ('id_otrospagos', 'saldoafavor', 'año', 'remanentesalfav')
+                                            comp = dict.fromkeys(csf)
+                                            comp.update(dtotpa[dt__])
+                                            comp['id_otrospagos'] = otropago['id']
+                                            comp['saldoafavor'] = convtipo(comp['saldoafavor'], 'float')
+                                            comp['remanentesalfav'] = convtipo(comp['remanentesalfav'], 'float')
+                                            reg = (comp['id_otrospagos'], comp['saldoafavor'], comp['año'],
+                                                   comp['remanentesalfav'])
+                                            cur.execute("INSERT INTO CompensacionSaldosAFavor VALUES(?,?,?,?)", reg)
+                                otropago['importe'] = convtipo(otropago['importe'], 'float')
+                                reg = (otropago['id_nomina'], otropago['id'], otropago['tipootropago'],
+                                       otropago['clave'], otropago['concepto'], otropago['importe'])
+                                cur.execute("INSERT INTO OtrosPagos VALUES(?,?,?,?,?,?)", reg)
+                    elif not dt.find('incapacidades') == -1:
+                        incas = nomdata[dt]
+                        inc = ('id_nomina', 'id', 'diasincapacidad', 'tipoincapacidad', 'importemonetario')
+                        for dt_ in incas:
+                            if not dt_.find('incapacidad') == -1:
+                                # diasincapacidad | tipoincapacidad | importemonetario
+                                incap = incas[dt_]
+                                incapacidad = dict.fromkeys(inc)
+                                incapacidad['id_nomina'] = detallecompl['id']
+                                incapacidad['id'] = idcomp(c, 'Incapacidades', 'id', 5)
+                                incapacidad.update(incap)
+                                incapacidad['diasincapacidad'] = convtipo(incapacidad['diasincapacidad'], 'int')
+                                incapacidad['importemonetario'] = convtipo(incapacidad['importemonetario'], 'float')
+                                reg = (incapacidad['id_nomina'], incapacidad['id'], incapacidad['diasincapacidad'],
+                                       incapacidad['tipoincapacidad'], incapacidad['importemonetario'])
+                                cur.execute("INSERT INTO Incapacidades VALUES(?,?,?,?,?)", reg)
+            reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['tiponomina'],
+                   detallecompl['fechapago'], detallecompl['fechainicialpago'], detallecompl['fechafinalpago'],
+                   detallecompl['numdiaspagados'], detallecompl['totalpercepciones'], detallecompl['totaldeducciones'],
+                   detallecompl['totalotrospagos'])
+            cur.execute("INSERT INTO Nomina VALUES(?,?,?,?,?,?,?,?,?,?,?)", reg)
     cur.close()

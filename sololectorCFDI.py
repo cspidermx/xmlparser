@@ -2,13 +2,8 @@ from lxml import etree
 from compConcepto import readcompC
 from compCFDI import readcomp
 import os
-from dbmgmnt import dbopen, dbclose, dbinsert_cfdi, dbinsert_cfdi_rels, dbinsertemisor, dbinsertreceptor, dbinsertimpuestos
-from dbmgmnt import dbinsertconceptos, dbinsertcomplementos
-# from dateutil import parser
-# from dateutil.tz import gettz
-# from datetime import datetime
 
-tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\For3_3Testing_1.xml"))
+tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\ejemploNomina1_2atributootrospagos.xml"))
 root = tree.getroot()
 namespaces = root.nsmap
 if root.tag.lower().find('comprobante') == -1:

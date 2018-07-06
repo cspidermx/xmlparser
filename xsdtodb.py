@@ -12,7 +12,7 @@ def attrsextension(base, namespaces):
                         resp = ''
                         for attr in t:
                             if attr.tag.lower().find('attribute') != -1:
-                                resp = resp + '    ' + getattrvalues(attr, namespaces) + "\n"
+                                resp = resp + '\t' + getattrvalues(attr, namespaces) + "\n"
     return resp
 
 
@@ -44,7 +44,7 @@ def getattrvalues(attr, namespaces):
             if base == '':
                 base = '??'
     if name != '??':
-        return '    ' + name + '  ' + use + '  ' + fixed
+        return '\t' + name + '  ' + use + '  ' + fixed
     else:
         return attrsextension(base, namespaces)
 
@@ -54,14 +54,14 @@ def getroot(root, indent, namespaces):
         if element.tag.lower().find('element') != -1:
             for k in element.attrib:
                 if k.lower().find('name') != -1:
-                    print('    ' * indent, 'Table:', element.attrib[k])
+                    print('\t' * indent, 'Table:', element.attrib[k])
                 if k.lower().find('type') != -1:
-                    print('    ' * indent, attrsextension(element.attrib[k], namespaces))
+                    print('\t' * indent, attrsextension(element.attrib[k], namespaces))
             for data in element:
                 if data.tag.lower().find('complextype') != -1:
                     for attr in data:
                         if attr.tag.lower().find('attribute') != -1:
-                            print('    ' * indent, getattrvalues(attr, namespaces))
+                            print('\t' * indent, getattrvalues(attr, namespaces))
                     for attr in data:
                         if attr.tag.lower().find('sequence') != -1:
                             getroot(attr, indent + 1, namespaces)
@@ -74,10 +74,10 @@ def getroot(root, indent, namespaces):
         if element.tag.lower().find('choice') != -1:
             getroot(element, indent + 1, namespaces)
         if element.tag.lower().find('extension') != -1:
-            print('    ' * indent, getattrvalues(element, namespaces))
+            print('\t' * indent, getattrvalues(element, namespaces))
 
 
-tree = etree.parse('C:\\Users\\Charly\\Dropbox\\Work\\CFDIs\\XSDs\\Complementos\\Nomina\\nomina12.xsd')
+tree = etree.parse('C:\\Users\\Charly\\Dropbox\\Work\\CFDIs\\XSDs\\Complementos\\Recepción de pagos​\\Pagos10.xsd')
 root = tree.getroot()
 namespaces = root.nsmap
 getroot(root, 0, namespaces)
