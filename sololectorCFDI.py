@@ -3,7 +3,7 @@ from compConcepto import readcompC
 from compCFDI import readcomp
 import os
 
-tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\ejemploNomina1_2atributootrospagos.xml"))
+tree = etree.parse(os.path.join(os.getcwd(), "XMLs\\ejemploparcialesconstruccion3_2.xml"))
 root = tree.getroot()
 namespaces = root.nsmap
 if root.tag.lower().find('comprobante') == -1:

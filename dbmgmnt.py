@@ -90,8 +90,8 @@ def dbinsert_cfdi_rels(c, data):
     # UUID  --  Es posible que sean varios, data los trae como UUID#
     cur = c.cursor()
     i = 1
-    while 'UUID' + str(i) in data:
-        reg = (data['UUID'], data['tiporelacion'], data['UUID' + str(i)])
+    while 'uuid' + str(i) in data:
+        reg = (data['UUID'], data['tiporelacion'], data['uuid' + str(i)])
         cur.execute("INSERT INTO CFDIrelacionados VALUES(?,?,?)", reg)
         # c.commit()
         i += 1
@@ -618,10 +618,19 @@ def dbinsertcomplementos(c, data):
                     detallecompl[dt] = data[con][dt]
                 elif not dt.find('informacionaduanera') == -1:
                     dtstr = data[con][dt]
-                    detallecompl['cve_aduana'] = idcomp(c, 'T_Aduana', 'cve_Aduana', 7)
-                    inseradd(c, dtstr, detallecompl['cve_aduana'], 'aduana')
+                    detallecompl['id_aduana'] = idcomp(c, 'T_Aduana', 'cve_Aduana', 7)
+                    inseradd(c, dtstr, detallecompl['id_aduana'], 'aduana')
                     # numero | fecha | aduana
                     # c.commit()
+            detallecompl['version'] = convtipo(detallecompl['version'], 'float')
+            detallecompl['montoadquisicion'] = convtipo(detallecompl['montoadquisicion'], 'float')
+            detallecompl['montoenajenacion'] = convtipo(detallecompl['montoenajenacion'], 'float')
+            detallecompl['valor'] = convtipo(detallecompl['valor'], 'float')
+            reg = (detallecompl['UUID'], detallecompl['id'], detallecompl['version'], detallecompl['montoadquisicion'],
+                   detallecompl['montoenajenacion'], detallecompl['clavevehicular'], detallecompl['marca'],
+                   detallecompl['tipo'], detallecompl['modelo'], detallecompl['numeromotor'],
+                   detallecompl['numeroserie'], detallecompl['niv'], detallecompl['valor'], detallecompl['id_aduana'])
+            cur.execute("INSERT INTO VehiculoUsado VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", reg)
         elif con == 'parcialesconstruccion':
             # version | numperlicoaut
             compl = ('UUID', 'id', 'version', 'numperlicoaut')

@@ -316,7 +316,7 @@ def cleandb():
 
 
 cleandb()
-# storexml("ejemploVentaVehiculos3_2.xml")
+# storexml("ejemploCfdiRelacionados3_3.xml")
 for f in os.listdir('.\\XMLs\\'):
     if f[-3:].lower() == 'xml':
         filename = f
