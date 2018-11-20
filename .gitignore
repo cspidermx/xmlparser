@@ -97,6 +97,8 @@ ENV/
 
 # mypy
 .mypy_cache/
+.idea/
+
 *.xml
 *.csv
 CFDI.zip
